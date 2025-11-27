@@ -1,0 +1,22 @@
+[images]
+  remote_images = ["https://source.unsplash.com/.*", "https://images.unsplash.com/.*", "https://ext.same-assets.com/.*", "https://ugc.same-assets.com/.*"]
+
+[build]
+  command = "npm install && npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+  # Increase payload size limit to allow large file uploads (up to 100MB)
+  # Default is 6MB which blocks files over ~5-6MB
+  included_files = ["**/*"]
+
+# Configure Next.js API routes to accept large payloads
+[functions."___netlify-handler"]
+  node_bundler = "esbuild"
+
+[functions."___netlify-odb-handler"]
+  node_bundler = "esbuild"

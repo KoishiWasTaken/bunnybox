@@ -1,0 +1,8 @@
+{
+  "config": {
+    "name": "File Upload Function",
+    "generator": "@netlify/plugin-nextjs@5.0.0",
+    "nodeBundler": "esbuild",
+    "timeout": 26
+  }
+}
