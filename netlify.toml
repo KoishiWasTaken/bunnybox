@@ -10,13 +10,27 @@
 
 [functions]
   node_bundler = "esbuild"
-  # Increase payload size limit to allow large file uploads (up to 100MB)
-  # Default is 6MB which blocks files over ~5-6MB
-  included_files = ["**/*"]
+  # Exclude unnecessary packages from serverless functions to reduce bundle size
+  # These are client-side only or build-time dependencies
+  external_node_modules = [
+    "lucide-react",
+    "@radix-ui/*",
+    "class-variance-authority",
+    "tailwind-merge",
+    "tailwindcss-animate",
+    "@biomejs/biome",
+    "typescript",
+    "eslint",
+    "eslint-config-next",
+    "@typescript-eslint/*",
+    "tailwindcss",
+    "postcss",
+    "autoprefixer",
+    "@swc/*",
+    "@types/*"
+  ]
 
-# Configure Next.js API routes to accept large payloads
-[functions."___netlify-handler"]
-  node_bundler = "esbuild"
-
-[functions."___netlify-odb-handler"]
-  node_bundler = "esbuild"
+# Scheduled cleanup function - minimize bundle
+[functions.scheduled-cleanup]
+  external_node_modules = ["@supabase/supabase-js"]
+  included_files = ["node_modules/@supabase/**"]
