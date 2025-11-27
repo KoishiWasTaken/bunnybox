@@ -1,4 +1,40 @@
-# bunnybox todos - Version 57: SUPABASE STORAGE DEPLOYED! 🚀🎉
+# bunnybox todos - Version 59: Investigating Upload Failure
+
+## 🚨 CURRENT ISSUE: 153KB File Upload Failing
+
+**Date:** November 27, 2025
+**Status:** 🔍 INVESTIGATING
+**Error:** "Failed to save file metadata"
+
+### Problem Details:
+- User tried to upload a 153KB file
+- Upload failed with error: "Failed to save file metadata"
+- File size is very small (153KB), so not a size limit issue
+- Error occurs in Step 3 (finalize-upload) after file is already in storage
+
+### Root Cause Analysis:
+The error comes from `/api/files/finalize-upload/route.ts` when inserting into the database.
+
+**Possible causes:**
+1. ❓ Missing database columns (storage_path, uses_storage)
+2. ❓ Database constraint violation
+3. ❓ RLS policy blocking insert (unlikely, using supabaseAdmin)
+4. ❓ Invalid field values
+5. ❓ Supabase connection issue
+
+### Action Plan:
+1. ✅ Improved error logging to capture full database error details
+2. ⏳ Commit and push changes to GitHub
+3. ⏳ Wait for Netlify deployment
+4. ⏳ Ask user to try upload again and check Netlify function logs
+5. ⏳ Verify database schema has all required columns
+
+### Changes Made:
+- Enhanced error logging in finalize-upload route
+- Now returns actual database error message to help diagnose
+- Added detailed console logging of error.code, error.details, error.hint
+
+---
 
 ## ✅ Version 57: Supabase Storage Upload System - MIGRATION COMPLETE!
 

@@ -97,6 +97,18 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Database insert error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        fileId,
+        filename: sanitizeFilename(filename),
+        filesize,
+        userId,
+        deleteDuration,
+        storagePath,
+      });
 
       // Rollback: Delete file from storage
       await supabaseAdmin.storage
@@ -115,11 +127,13 @@ export async function POST(request: NextRequest) {
           filename: sanitizeFilename(filename),
           fileSize: filesize,
           errorCode: error.code,
+          errorDetails: error.details,
+          errorHint: error.hint,
         },
       }).catch(err => console.error('Logging failed:', err));
 
       return NextResponse.json(
-        { error: 'Failed to save file metadata' },
+        { error: `Failed to save file metadata: ${error.message || 'Unknown database error'}` },
         { status: 500 }
       );
     }
