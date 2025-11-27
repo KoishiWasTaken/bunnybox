@@ -1,22 +1,25 @@
 # bunnybox todos - Version 60: Adding Donation Link
 
-## 🚧 CURRENT TASK: Add Upload Progress Bar - Version 61
+## ✅ COMPLETED: Upload Progress Bar & Donation Link - Version 60-61
 
 **Date:** November 27, 2025
-**Status:** 🚧 IN PROGRESS
+**Status:** ✅ COMPLETE
 
-### Task Details:
-- Add thin progress bar at top of page during file upload
-- Show real-time upload progress
-- Remove progress bar when upload completes
-- Commit changes to GitHub
+### Version 60 - Donation Link:
+- ✅ Added "Donate" tab in navigation linking to Ko-fi
+- ✅ Added FAQ entry about supporting bunnybox
+- ✅ Donate link opens in new tab
 
-### Changes:
-1. ✅ Add upload progress state
-2. ✅ Replace fetch with XMLHttpRequest for progress tracking
-3. ✅ Add thin progress bar component
-4. ⏳ Test and create version
-5. ⏳ Commit to GitHub
+### Version 61 - Upload Progress Bar:
+- ✅ Added thin progress bar at top of page during file upload
+- ✅ Real-time upload progress tracking using XMLHttpRequest
+- ✅ Progress bar shows from 0-100% and disappears when complete
+- ✅ Smooth gradient animation (pink → purple → blue)
+- ✅ Created version 61
+
+### Git Commit:
+- ✅ Changes committed to local repository
+- ⚠️ **Waiting for GitHub repo URL to push changes**
 
 ---
 
