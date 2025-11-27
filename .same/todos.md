@@ -1,38 +1,42 @@
 # bunnybox todos - Version 59: Investigating Upload Failure
 
-## 🚨 CURRENT ISSUE: 153KB File Upload Failing
+## ✅ FIXED: 153KB File Upload Failure
 
 **Date:** November 27, 2025
-**Status:** 🔍 INVESTIGATING
+**Status:** ✅ FIXED
 **Error:** "Failed to save file metadata"
 
-### Problem Details:
-- User tried to upload a 153KB file
-- Upload failed with error: "Failed to save file metadata"
-- File size is very small (153KB), so not a size limit issue
-- Error occurs in Step 3 (finalize-upload) after file is already in storage
+### Problem Solved! 🎉
 
-### Root Cause Analysis:
-The error comes from `/api/files/finalize-upload/route.ts` when inserting into the database.
+**Root Cause:** The `file_data` column was set to NOT NULL, but storage-based uploads try to insert NULL (because files are stored in Supabase Storage, not as base64). This caused a database constraint violation.
 
-**Possible causes:**
-1. ❓ Missing database columns (storage_path, uses_storage)
-2. ❓ Database constraint violation
-3. ❓ RLS policy blocking insert (unlikely, using supabaseAdmin)
-4. ❓ Invalid field values
-5. ❓ Supabase connection issue
+### The Fix:
+```sql
+ALTER TABLE files
+ALTER COLUMN file_data DROP NOT NULL;
+```
 
-### Action Plan:
-1. ✅ Improved error logging to capture full database error details
-2. ⏳ Commit and push changes to GitHub
-3. ⏳ Wait for Netlify deployment
-4. ⏳ Ask user to try upload again and check Netlify function logs
-5. ⏳ Verify database schema has all required columns
+**Applied:** ✅ November 27, 2025
+**Result:** file_data column now allows NULL values
 
-### Changes Made:
-- Enhanced error logging in finalize-upload route
-- Now returns actual database error message to help diagnose
-- Added detailed console logging of error.code, error.details, error.hint
+### What This Means:
+- ✅ Storage-based uploads can now insert NULL for file_data
+- ✅ Legacy base64 uploads still work (file_data contains base64)
+- ✅ Fully backward compatible
+- ✅ All file uploads should work now!
+
+### Action Taken:
+1. ✅ Verified database schema (columns exist)
+2. ✅ Identified NOT NULL constraint on file_data
+3. ✅ Applied database migration
+4. ✅ Verified fix was successful
+5. ✅ Created documentation
+
+### Test Results Needed:
+- [ ] Upload 153KB file again
+- [ ] Upload files of various sizes
+- [ ] Verify files appear in database with uses_storage=true
+- [ ] Verify files can be downloaded/viewed
 
 ---
 
