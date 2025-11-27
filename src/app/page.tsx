@@ -93,47 +93,67 @@ export default function Home() {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      if (user) {
-        formData.append('userId', user.id);
-      }
-      formData.append('deleteDuration', deleteDuration);
-
-      const response = await fetch('/api/files/upload', {
+      // Step 1: Get signed upload URL from our API
+      console.log('Step 1: Getting signed upload URL...');
+      const urlResponse = await fetch('/api/files/get-upload-url', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || 'application/octet-stream',
+        }),
       });
 
-      // Handle JSON parsing errors
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        console.error('JSON parsing error:', jsonError);
-        console.error('Response status:', response.status);
-        console.error('Response statusText:', response.statusText);
-
-        // Provide more specific error messages based on response status
-        if (response.status === 502 || response.status === 504) {
-          const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-          throw new Error(
-            `Upload timed out. Your file (${fileSizeInMB}MB) may be too large for the server to process. ` +
-            `Try compressing the file to under 30MB, or contact support at support@bunnybox.moe for help with larger files.`
-          );
-        } else if (response.status === 413) {
-          throw new Error('File is too large for the server to accept. Please try a smaller file.');
-        } else {
-          throw new Error(
-            'Server error during upload. This may be due to file size or server timeout. ' +
-            'Please try a smaller file or contact support@bunnybox.moe if the issue persists.'
-          );
-        }
+      if (!urlResponse.ok) {
+        const errorData = await urlResponse.json();
+        throw new Error(errorData.error || 'Failed to get upload URL');
       }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+      const { fileId, storagePath, signedUrl } = await urlResponse.json();
+      console.log(`Step 1 complete: Got upload URL for file ID ${fileId}`);
+
+      // Step 2: Upload file directly to Supabase Storage
+      console.log('Step 2: Uploading file directly to Supabase Storage...');
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'x-upsert': 'false',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('Storage upload failed:', errorText);
+        throw new Error('Failed to upload file to storage. Please try again.');
       }
+
+      console.log('Step 2 complete: File uploaded to storage successfully');
+
+      // Step 3: Finalize upload by creating database record
+      console.log('Step 3: Finalizing upload (creating database record)...');
+      const finalizeResponse = await fetch('/api/files/finalize-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileId,
+          storagePath,
+          filename: file.name,
+          filesize: file.size,
+          mimeType: file.type || 'application/octet-stream',
+          userId: user?.id || null,
+          deleteDuration,
+        }),
+      });
+
+      const data = await finalizeResponse.json();
+
+      if (!finalizeResponse.ok) {
+        throw new Error(data.error || 'Failed to finalize upload');
+      }
+
+      console.log('Step 3 complete: Upload finalized successfully!');
 
       const fullUrl = `${window.location.origin}${data.url}`;
       setUploadedUrl(fullUrl);
