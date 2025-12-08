@@ -23,8 +23,14 @@
 
 **Auto-Deploy Status:**
 - GitHub repository updated ✅
-- Netlify will automatically deploy from GitHub ✅
+- Security fix applied (Next.js 15.5.7) ✅
+- Netlify deployment unblocked ✅
 - Site will be live at https://bunnybox.moe in ~2-3 minutes ✅
+
+**Security Fix (Commit ac8e729):**
+- Updated Next.js from 15.3.2 → 15.5.7
+- Resolved critical security vulnerability
+- Unblocked Netlify deployment
 
 ---
 
