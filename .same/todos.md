@@ -1,4 +1,32 @@
-# bunnybox todos - Version 70: Settings & File View Complete!
+# bunnybox todos - Version 71: DEPLOYED TO PRODUCTION! 🚀
+
+## 🎉 VERSION 71 SUCCESSFULLY DEPLOYED! 🚀
+
+**Date:** December 8, 2025
+**Status:** ✅ DEPLOYED TO PRODUCTION
+**Version:** 71
+**GitHub:** https://github.com/KoishiWasTaken/bunnybox
+**Live URL:** https://bunnybox.moe (auto-deploy from GitHub)
+
+### 🎯 Latest Deployment - Version 71
+
+**Deployed:** December 8, 2025
+**Commit:** e1fd14a
+**Changes Pushed:** 147 files, 28,809+ insertions
+
+**What's New in Version 71:**
+- ✅ Upload duration dropdown fully translated (all 11 languages)
+- ✅ All duration options: 1h, 6h, 12h, 1d, 2d, 7d, 30d
+- ✅ "Sign in for permanent storage" message translated
+- ✅ File selection display messages translated
+- ✅ Complete multilingual system with 2,288+ translation strings
+
+**Auto-Deploy Status:**
+- GitHub repository updated ✅
+- Netlify will automatically deploy from GitHub ✅
+- Site will be live at https://bunnybox.moe in ~2-3 minutes ✅
+
+---
 
 ## 🎉 SETTINGS & FILE VIEW PAGES - FULLY TRANSLATED! ⚙️
 
