@@ -1,0 +1,15 @@
+Japanese: { title: '法的情報', subtitle: 'ポリシーと利用規約をご確認ください', termsOfService: '利用規約', privacyPolicy: 'プライバシーポリシー', acceptableUsePolicy: '利用規定', dmcaPolicy: 'DMCA/知的財産ポリシー', lastUpdated: '最終更新', contact: 'お問い合わせ', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi（Discord）' }
+
+Chinese: { title: '法律信息', subtitle: '请查看我们的政策和条款', termsOfService: '服务条款', privacyPolicy: '隐私政策', acceptableUsePolicy: '可接受使用政策', dmcaPolicy: 'DMCA/知识产权政策', lastUpdated: '最后更新', contact: '联系我们', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi（Discord）' }
+
+Italian: { title: 'Informazioni Legali', subtitle: 'Si prega di rivedere le nostre politiche e termini', termsOfService: 'Termini di Servizio', privacyPolicy: 'Privacy Policy', acceptableUsePolicy: 'Politica di Uso Accettabile', dmcaPolicy: 'Politica DMCA/PI', lastUpdated: 'Ultimo aggiornamento', contact: 'Contatti', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi su Discord' }
+
+Vietnamese: { title: 'Thông tin pháp lý', subtitle: 'Vui lòng xem lại các chính sách và điều khoản của chúng tôi', termsOfService: 'Điều khoản dịch vụ', privacyPolicy: 'Chính sách bảo mật', acceptableUsePolicy: 'Chính sách Sử dụng Chấp nhận được', dmcaPolicy: 'Chính sách DMCA/Sở hữu trí tuệ', lastUpdated: 'Cập nhật lần cuối', contact: 'Liên hệ', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi trên Discord' }
+
+German: { title: 'Rechtliche Informationen', subtitle: 'Bitte lesen Sie unsere Richtlinien und Bedingungen', termsOfService: 'Nutzungsbedingungen', privacyPolicy: 'Datenschutz', acceptableUsePolicy: 'Akzeptable Nutzungsrichtlinie', dmcaPolicy: 'DMCA/IP-Richtlinie', lastUpdated: 'Zuletzt aktualisiert', contact: 'Kontakt', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi auf Discord' }
+
+Korean: { title: '법적 정보', subtitle: '당사의 정책 및 약관을 검토해 주세요', termsOfService: '서비스 약관', privacyPolicy: '개인정보 처리방침', acceptableUsePolicy: '허용 가능한 사용 정책', dmcaPolicy: 'DMCA/지적재산권 정책', lastUpdated: '최종 업데이트', contact: '문의', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi (Discord)' }
+
+Portuguese: { title: 'Informações Legais', subtitle: 'Por favor, revise nossas políticas e termos', termsOfService: 'Termos de Serviço', privacyPolicy: 'Política de Privacidade', acceptableUsePolicy: 'Política de Uso Aceitável', dmcaPolicy: 'Política DMCA/PI', lastUpdated: 'Última atualização', contact: 'Contato', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi no Discord' }
+
+Russian: { title: 'Правовая информация', subtitle: 'Пожалуйста, ознакомьтесь с нашими политиками и условиями', termsOfService: 'Условия использования', privacyPolicy: 'Политика конфиденциальности', acceptableUsePolicy: 'Политика допустимого использования', dmcaPolicy: 'Политика DMCA/ИС', lastUpdated: 'Последнее обновление', contact: 'Контакты', contactEmail: 'support@bunnybox.moe', contactDiscord: '@.koishi в Discord' }

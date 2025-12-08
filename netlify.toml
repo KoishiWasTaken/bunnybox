@@ -1,0 +1,49 @@
+[images]
+  remote_images = ["https://source.unsplash.com/.*", "https://images.unsplash.com/.*", "https://ext.same-assets.com/.*", "https://ugc.same-assets.com/.*"]
+
+[build]
+  command = "npm install && npm run build"
+  publish = ".next"
+
+# Redirect Netlify subdomain to custom domain
+[[redirects]]
+  from = "https://bunbox.netlify.app/*"
+  to = "https://bunnybox.moe/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://*.bunbox.netlify.app/*"
+  to = "https://bunnybox.moe/:splat"
+  status = 301
+  force = true
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+  # Exclude unnecessary packages from serverless functions to reduce bundle size
+  # These are client-side only or build-time dependencies
+  external_node_modules = [
+    "lucide-react",
+    "@radix-ui/*",
+    "class-variance-authority",
+    "tailwind-merge",
+    "tailwindcss-animate",
+    "@biomejs/biome",
+    "typescript",
+    "eslint",
+    "eslint-config-next",
+    "@typescript-eslint/*",
+    "tailwindcss",
+    "postcss",
+    "autoprefixer",
+    "@swc/*",
+    "@types/*"
+  ]
+
+# Scheduled cleanup function - minimize bundle
+[functions.scheduled-cleanup]
+  external_node_modules = ["@supabase/supabase-js"]
+  included_files = ["node_modules/@supabase/**"]
