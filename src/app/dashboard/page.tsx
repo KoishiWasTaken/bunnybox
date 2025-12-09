@@ -158,25 +158,25 @@ export default function DashboardPage() {
         </Dialog>
       )}
 
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
                 {t.dashboard.myFiles}
               </h1>
-              <p className="text-lg text-black dark:text-white">Welcome back, {user.username}!</p>
+              <p className="text-base sm:text-lg text-black dark:text-white">Welcome back, {user.username}!</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {user.username === 'koishi' && (
                 <Link href="/admin/panel">
-                  <Button className="bunny-button bg-orange-400 dark:bg-orange-900/50 hover:bg-orange-500 dark:hover:bg-orange-800/50 text-orange-900 dark:text-orange-200">
+                  <Button className="w-full sm:w-auto bunny-button bg-orange-400 dark:bg-orange-900/50 hover:bg-orange-500 dark:hover:bg-orange-800/50 text-orange-900 dark:text-orange-200 min-h-[44px]">
                     Admin Panel
                   </Button>
                 </Link>
               )}
               <Link href="/">
-                <Button className="bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200">
+                <Button className="w-full sm:w-auto bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200 min-h-[44px]">
                   Upload New File
                 </Button>
               </Link>
@@ -185,11 +185,11 @@ export default function DashboardPage() {
         </div>
 
         {files.length === 0 ? (
-          <Card className="bunny-card p-12 text-center">
-            <h2 className="text-2xl font-bold text-black dark:text-white mb-4">{t.dashboard.noFiles}</h2>
-            <p className="text-black dark:text-white mb-6">{t.dashboard.uploadFirst}</p>
+          <Card className="bunny-card p-6 sm:p-12 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-black dark:text-white mb-4">{t.dashboard.noFiles}</h2>
+            <p className="text-sm sm:text-base text-black dark:text-white mb-6">{t.dashboard.uploadFirst}</p>
             <Link href="/">
-              <Button className="bunny-button bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white">
+              <Button className="bunny-button bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white min-h-[44px]">
                 {t.home.upload}
               </Button>
             </Link>
@@ -197,8 +197,8 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Search Bar */}
-            <div className="mb-4 flex justify-end">
-              <div className="w-80">
+            <div className="mb-4">
+              <div className="w-full sm:w-80 sm:ml-auto">
                 <Input
                   type="text"
                   placeholder="Search by filename..."
@@ -214,16 +214,16 @@ export default function DashboardPage() {
 
             <Card className="bunny-card overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[640px]">
                   <thead className="bg-white/60 dark:bg-black/30 border-b-2 border-pink-200 dark:border-pink-900/30">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Filename</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Size</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Uploaded</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Visitors</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Downloads</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Expires</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 dark:text-gray-200">Actions</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Filename</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Size</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden md:table-cell">Uploaded</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">Visitors</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">Downloads</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Expires</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -242,31 +242,31 @@ export default function DashboardPage() {
                           index % 2 === 0 ? 'bg-white/20 dark:bg-black/10' : ''
                         }`}
                       >
-                        <td className="px-4 py-3">
-                          <div className="max-w-xs truncate text-gray-800 dark:text-gray-200 font-medium" title={file.filename}>
+                        <td className="px-2 sm:px-4 py-3">
+                          <div className="max-w-[120px] sm:max-w-xs truncate text-gray-800 dark:text-gray-200 font-medium text-xs sm:text-sm" title={file.filename}>
                             {file.filename}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-black dark:text-white text-sm whitespace-nowrap">
+                        <td className="px-2 sm:px-4 py-3 text-black dark:text-white text-xs sm:text-sm whitespace-nowrap">
                           {formatFileSize(file.filesize)}
                         </td>
-                        <td className="px-4 py-3 text-black dark:text-white text-sm whitespace-nowrap">
+                        <td className="px-2 sm:px-4 py-3 text-black dark:text-white text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">
                           {new Date(file.uploadDate).toLocaleDateString()}
                         </td>
-                        <td className="px-4 py-3 text-black dark:text-white text-sm">
+                        <td className="px-2 sm:px-4 py-3 text-black dark:text-white text-xs sm:text-sm hidden lg:table-cell">
                           {file.uniqueVisitors}
                         </td>
-                        <td className="px-4 py-3 text-black dark:text-white text-sm">
+                        <td className="px-2 sm:px-4 py-3 text-black dark:text-white text-xs sm:text-sm hidden lg:table-cell">
                           {file.downloadCount}
                         </td>
-                        <td className="px-4 py-3 text-black dark:text-white text-sm whitespace-nowrap">
+                        <td className="px-2 sm:px-4 py-3 text-black dark:text-white text-xs sm:text-sm whitespace-nowrap">
                           {getTimeUntilDeletion(file.deleteAt ? new Date(file.deleteAt) : null)}
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
+                        <td className="px-2 sm:px-4 py-3">
+                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                             <Link href={`/f/${file.id}`} target="_blank">
                               <Button
-                                className="bunny-button bg-purple-300 dark:bg-purple-900/50 hover:bg-purple-400 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200 px-3 py-1 text-sm h-auto"
+                                className="bunny-button bg-purple-300 dark:bg-purple-900/50 hover:bg-purple-400 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                               >
                                 View
                               </Button>
@@ -274,14 +274,14 @@ export default function DashboardPage() {
                             <Button
                               onClick={() => copyLink(file.id)}
                               variant="outline"
-                              className="bunny-button border-pink-300 dark:border-pink-900/30 text-pink-700 dark:text-pink-400 px-3 py-1 text-sm h-auto"
+                              className="bunny-button border-pink-300 dark:border-pink-900/30 text-pink-700 dark:text-pink-400 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                             >
                               Copy
                             </Button>
                             <Button
                               onClick={() => handleDelete(file.id)}
                               variant="outline"
-                              className="bunny-button border-red-300 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 px-3 py-1 text-sm h-auto"
+                              className="bunny-button border-red-300 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                             >
                               Delete
                             </Button>

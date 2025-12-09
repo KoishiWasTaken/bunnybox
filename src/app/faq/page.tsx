@@ -18,9 +18,9 @@ function FAQAccordion({ faq }: { faq: FAQItem }) {
     <div className="bunny-card overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-white/30 dark:hover:bg-black/20 transition-all"
+        className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between hover:bg-white/30 dark:hover:bg-black/20 transition-all min-h-[44px]"
       >
-        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 pr-4">
+        <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200 pr-2 sm:pr-4">
           {faq.question}
         </h3>
         <svg
@@ -35,8 +35,8 @@ function FAQAccordion({ faq }: { faq: FAQItem }) {
         </svg>
       </button>
       {isOpen && (
-        <div className="px-6 pb-4 pt-2">
-          <p className="text-black dark:text-white leading-relaxed">{faq.answer}</p>
+        <div className="px-4 sm:px-6 pb-3 sm:pb-4 pt-2">
+          <p className="text-sm sm:text-base text-black dark:text-white leading-relaxed">{faq.answer}</p>
         </div>
       )}
     </div>
@@ -74,24 +74,24 @@ export default function FAQPage() {
     <div className="min-h-screen bunny-gradient">
       <Navigation />
 
-      <div className="max-w-4xl mx-auto p-8">
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
             {t.faq.title}
           </h1>
-          <p className="text-lg text-black dark:text-white">
+          <p className="text-base sm:text-lg text-black dark:text-white">
             {t.faq.subtitle}
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqs.map((faq, index) => (
             <FAQAccordion key={index} faq={faq} />
           ))}
         </div>
 
-        <Card className="bunny-card p-6 mt-8 text-center">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+        <Card className="bunny-card p-4 sm:p-6 mt-6 sm:mt-8 text-center">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
             {t.faq.contactTitle}
           </h3>
           <p className="text-black dark:text-white mb-2">

@@ -186,8 +186,8 @@ export default function SettingsPage() {
 
       {/* Show info banner for users without email (on settings page, no blocking dialog) */}
       {user && !user.email && !user.is_verified && (
-        <div className="max-w-3xl mx-auto px-8 pt-4">
-          <div className="bg-blue-100 dark:bg-blue-950/30 border-2 border-blue-300 dark:border-blue-900/30 rounded-2xl p-4">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="bg-blue-100 dark:bg-blue-950/30 border-2 border-blue-300 dark:border-blue-900/30 rounded-2xl p-3 sm:p-4">
             <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
               📧 {t.settings.emailVerificationRequired}
             </p>
@@ -198,20 +198,20 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto p-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
+      <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
             {t.settings.title}
           </h1>
-          <p className="text-black dark:text-white">
+          <p className="text-sm sm:text-base text-black dark:text-white">
             {t.settings.accountSettings}
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Change Email */}
-          <Card className="bunny-card p-6">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+          <Card className="bunny-card p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
               {t.settings.changeEmail}
             </h2>
             <p className="text-sm text-black dark:text-white mb-4">
@@ -249,7 +249,7 @@ export default function SettingsPage() {
               <Button
                 type="submit"
                 disabled={changingEmail}
-                className="bunny-button bg-pink-500 hover:bg-pink-600 text-white w-full"
+                className="bunny-button bg-pink-500 hover:bg-pink-600 text-white w-full min-h-[44px]"
               >
                 {changingEmail ? t.common.loading : t.settings.updateEmail}
               </Button>
@@ -260,8 +260,8 @@ export default function SettingsPage() {
           </Card>
 
           {/* Change Password */}
-          <Card className="bunny-card p-6">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+          <Card className="bunny-card p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
               {t.settings.changePassword}
             </h2>
             <form onSubmit={handleChangePassword} className="space-y-4">
@@ -310,7 +310,7 @@ export default function SettingsPage() {
               <Button
                 type="submit"
                 disabled={changingPassword}
-                className="bunny-button bg-pink-500 hover:bg-pink-600 text-white w-full"
+                className="bunny-button bg-pink-500 hover:bg-pink-600 text-white w-full min-h-[44px]"
               >
                 {changingPassword ? t.common.loading : t.settings.updatePassword}
               </Button>
@@ -318,8 +318,8 @@ export default function SettingsPage() {
           </Card>
 
           {/* Delete Account */}
-          <Card className="bunny-card p-6 border-2 border-red-300 dark:border-red-900/50">
-            <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+          <Card className="bunny-card p-4 sm:p-6 border-2 border-red-300 dark:border-red-900/50">
+            <h2 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
               {t.settings.dangerZone}
             </h2>
             <p className="text-black dark:text-white mb-4">
@@ -329,7 +329,7 @@ export default function SettingsPage() {
             {!showDeleteConfirm ? (
               <Button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="bg-red-500 hover:bg-red-600 text-white w-full"
+                className="bg-red-500 hover:bg-red-600 text-white w-full min-h-[44px]"
               >
                 {t.settings.deleteAccountButton}
               </Button>
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                     className="bunny-input mt-2"
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <Button
                     onClick={() => {
                       setShowDeleteConfirm(false);
@@ -369,14 +369,14 @@ export default function SettingsPage() {
                       setDeleteConfirmPassword('');
                     }}
                     variant="outline"
-                    className="flex-1 border-gray-300 dark:border-gray-600"
+                    className="flex-1 border-gray-300 dark:border-gray-600 min-h-[44px]"
                   >
                     {t.common.cancel}
                   </Button>
                   <Button
                     onClick={handleDeleteAccount}
                     disabled={deleting}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white min-h-[44px]"
                   >
                     {deleting ? t.common.loading : t.settings.deleteAccount}
                   </Button>
