@@ -5,12 +5,13 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 import { LanguageSelector } from './LanguageSelector';
+import { Menu, X } from 'lucide-react';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -30,6 +31,24 @@ export function Navigation() {
   const [showDevKeyTooltip, setShowDevKeyTooltip] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -118,13 +137,23 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="border-b-2 border-pink-200 dark:border-pink-900/30 bg-white/50 dark:bg-black/20 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-8 py-4">
+      <nav className="border-b-2 border-pink-200 dark:border-pink-900/30 bg-white/50 dark:bg-black/20 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex gap-6">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-xl bg-pink-200 dark:bg-pink-900/50 hover:bg-pink-300 dark:hover:bg-pink-800/50 transition-all"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6 text-pink-900 dark:text-pink-200" />
+            </button>
+
+            {/* Desktop navigation */}
+            <div className="hidden md:flex gap-4 lg:gap-6">
               <Link href="/">
                 <button
-                  className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                  className={`px-3 lg:px-4 py-2 rounded-xl font-semibold transition-all text-sm lg:text-base ${
                     isActive('/')
                       ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
                       : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
@@ -135,7 +164,7 @@ export function Navigation() {
               </Link>
               <Link href="/faq">
                 <button
-                  className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                  className={`px-3 lg:px-4 py-2 rounded-xl font-semibold transition-all text-sm lg:text-base ${
                     isActive('/faq')
                       ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
                       : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
@@ -146,7 +175,7 @@ export function Navigation() {
               </Link>
               <Link href="/legal">
                 <button
-                  className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                  className={`px-3 lg:px-4 py-2 rounded-xl font-semibold transition-all text-sm lg:text-base ${
                     isActive('/legal')
                       ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
                       : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
@@ -157,7 +186,7 @@ export function Navigation() {
               </Link>
               <a href="https://ko-fi.com/koishiwastaken" target="_blank" rel="noopener noreferrer">
                 <button
-                  className="px-4 py-2 rounded-xl font-semibold transition-all text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30"
+                  className="px-3 lg:px-4 py-2 rounded-xl font-semibold transition-all text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30 text-sm lg:text-base"
                 >
                   {t.nav.donate}
                 </button>
@@ -165,7 +194,7 @@ export function Navigation() {
               {user?.username === 'koishi' && (
                 <Link href="/admin/panel">
                   <button
-                    className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                    className={`px-3 lg:px-4 py-2 rounded-xl font-semibold transition-all text-sm lg:text-base ${
                       isActive('/admin/panel')
                         ? 'bg-orange-400 dark:bg-orange-900/50 text-orange-900 dark:text-orange-200'
                         : 'text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-950/30'
@@ -177,26 +206,27 @@ export function Navigation() {
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Right side - Auth & Settings */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {user ? (
                 <>
-                  <span className="text-sm text-black dark:text-white">
+                  <span className="hidden sm:block text-sm text-black dark:text-white truncate max-w-[100px]">
                     {user.username}
                   </span>
-                  <Link href="/settings">
-                    <Button className="bunny-button bg-blue-300 dark:bg-blue-900/50 hover:bg-blue-400 dark:hover:bg-blue-800/50 text-blue-900 dark:text-blue-200">
+                  <Link href="/settings" className="hidden sm:block">
+                    <Button className="bunny-button bg-blue-300 dark:bg-blue-900/50 hover:bg-blue-400 dark:hover:bg-blue-800/50 text-blue-900 dark:text-blue-200 text-sm">
                       {t.nav.settings}
                     </Button>
                   </Link>
                   <Link href="/dashboard">
-                    <Button className="bunny-button bg-purple-300 dark:bg-purple-900/50 hover:bg-purple-400 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200">
+                    <Button className="bunny-button bg-purple-300 dark:bg-purple-900/50 hover:bg-purple-400 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200 text-sm">
                       {t.nav.dashboard}
                     </Button>
                   </Link>
                   <Button
                     onClick={signOut}
                     variant="outline"
-                    className="bunny-button border-pink-300 dark:border-pink-900/30"
+                    className="hidden sm:flex bunny-button border-pink-300 dark:border-pink-900/30 text-sm"
                   >
                     {t.nav.signOut}
                   </Button>
@@ -208,7 +238,7 @@ export function Navigation() {
                     setShowAuthDialog(true);
                     setRecoveredPassword('');
                   }}
-                  className="bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200"
+                  className="bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200 text-sm"
                 >
                   {t.nav.signInSignUp}
                 </Button>
@@ -237,6 +267,166 @@ export function Navigation() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile sidebar overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-[280px] bg-white dark:bg-gray-900 z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between p-4 border-b-2 border-pink-200 dark:border-pink-900/30">
+            <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">bunnybox</h2>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 rounded-xl bg-pink-200 dark:bg-pink-900/50 hover:bg-pink-300 dark:hover:bg-pink-800/50 transition-all"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5 text-pink-900 dark:text-pink-200" />
+            </button>
+          </div>
+
+          {/* User info section (mobile) */}
+          {user && (
+            <div className="p-4 border-b-2 border-pink-200 dark:border-pink-900/30">
+              <p className="text-sm text-black dark:text-white font-semibold mb-2">
+                {t.nav.signedInAs || 'Signed in as'}
+              </p>
+              <p className="text-base text-pink-600 dark:text-pink-400 font-bold truncate">
+                {user.username}
+              </p>
+            </div>
+          )}
+
+          {/* Navigation links */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-2">
+              <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                <button
+                  className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                    isActive('/')
+                      ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
+                      : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
+                  }`}
+                >
+                  {t.nav.home}
+                </button>
+              </Link>
+
+              {user && (
+                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                      isActive('/dashboard')
+                        ? 'bg-purple-300 dark:bg-purple-900/50 text-purple-900 dark:text-purple-200'
+                        : 'text-black dark:text-white hover:bg-purple-100 dark:hover:bg-purple-950/30'
+                    }`}
+                  >
+                    {t.nav.dashboard}
+                  </button>
+                </Link>
+              )}
+
+              {user && (
+                <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                      isActive('/settings')
+                        ? 'bg-blue-300 dark:bg-blue-900/50 text-blue-900 dark:text-blue-200'
+                        : 'text-black dark:text-white hover:bg-blue-100 dark:hover:bg-blue-950/30'
+                    }`}
+                  >
+                    {t.nav.settings}
+                  </button>
+                </Link>
+              )}
+
+              <Link href="/faq" onClick={() => setIsMobileMenuOpen(false)}>
+                <button
+                  className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                    isActive('/faq')
+                      ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
+                      : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
+                  }`}
+                >
+                  {t.nav.faq}
+                </button>
+              </Link>
+
+              <Link href="/legal" onClick={() => setIsMobileMenuOpen(false)}>
+                <button
+                  className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                    isActive('/legal')
+                      ? 'bg-pink-300 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200'
+                      : 'text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30'
+                  }`}
+                >
+                  {t.nav.legal}
+                </button>
+              </Link>
+
+              <a href="https://ko-fi.com/koishiwastaken" target="_blank" rel="noopener noreferrer">
+                <button
+                  className="w-full text-left px-4 py-3 rounded-xl font-semibold transition-all text-black dark:text-white hover:bg-pink-100 dark:hover:bg-pink-950/30"
+                >
+                  {t.nav.donate}
+                </button>
+              </a>
+
+              {user?.username === 'koishi' && (
+                <Link href="/admin/panel" onClick={() => setIsMobileMenuOpen(false)}>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
+                      isActive('/admin/panel')
+                        ? 'bg-orange-400 dark:bg-orange-900/50 text-orange-900 dark:text-orange-200'
+                        : 'text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-950/30'
+                    }`}
+                  >
+                    {t.nav.adminPanel}
+                  </button>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar footer - Auth actions */}
+          <div className="p-4 border-t-2 border-pink-200 dark:border-pink-900/30 space-y-2">
+            {user ? (
+              <Button
+                onClick={() => {
+                  signOut();
+                  setIsMobileMenuOpen(false);
+                }}
+                variant="outline"
+                className="w-full bunny-button border-pink-300 dark:border-pink-900/30"
+              >
+                {t.nav.signOut}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setAuthMode('signin');
+                  setShowAuthDialog(true);
+                  setRecoveredPassword('');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200"
+              >
+                {t.nav.signInSignUp}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
