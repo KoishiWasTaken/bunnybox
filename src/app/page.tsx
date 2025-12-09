@@ -23,6 +23,7 @@ import { Navigation } from '@/components/Navigation';
 import { ActivationPopup } from '@/components/ActivationPopup';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { UploadProgressBar } from '@/components/UploadProgressBar';
+import { X } from 'lucide-react';
 
 interface Stats {
   totalFiles: number;
@@ -30,14 +31,22 @@ interface Stats {
   totalStorageBytes: number;
 }
 
+interface FileUploadStatus {
+  file: File;
+  progress: number;
+  status: 'pending' | 'uploading' | 'completed' | 'error';
+  url?: string;
+  error?: string;
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [deleteDuration, setDeleteDuration] = useState('30days');
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(-1); // -1 means not uploading, 0-100 is progress
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(-1);
+  const [fileStatuses, setFileStatuses] = useState<FileUploadStatus[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [banStatus, setBanStatus] = useState<{
@@ -63,7 +72,6 @@ export default function Home() {
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
-      // Don't show error to user, just fail silently
     } finally {
       setLoadingStats(false);
     }
@@ -83,24 +91,39 @@ export default function Home() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setUploadedUrl(null);
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      if (selectedFiles.length > 10) {
+        toast.error('You can upload a maximum of 10 files at once');
+        return;
+      }
+      setFiles(selectedFiles);
+      setFileStatuses(selectedFiles.map(file => ({
+        file,
+        progress: 0,
+        status: 'pending'
+      })));
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      toast.error(t.home.pleaseSelectFile);
-      return;
-    }
+  const removeFile = (index: number) => {
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    setFileStatuses(newFiles.map(file => ({
+      file,
+      progress: 0,
+      status: 'pending'
+    })));
+  };
 
-    setUploading(true);
-    setUploadProgress(0);
+  const uploadSingleFile = async (file: File, index: number): Promise<string | null> => {
     try {
-      // Step 1: Get signed upload URL from our API
-      console.log('Step 1: Getting signed upload URL...');
-      setUploadProgress(5);
+      // Update status to uploading
+      setFileStatuses(prev => prev.map((status, i) =>
+        i === index ? { ...status, status: 'uploading' as const, progress: 5 } : status
+      ));
+
+      // Step 1: Get signed upload URL
       const urlResponse = await fetch('/api/files/get-upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,40 +139,37 @@ export default function Home() {
       }
 
       const { fileId, storagePath, signedUrl } = await urlResponse.json();
-      console.log(`Step 1 complete: Got upload URL for file ID ${fileId}`);
-      setUploadProgress(10);
 
-      // Step 2: Upload file directly to Supabase Storage with progress tracking
-      console.log('Step 2: Uploading file directly to Supabase Storage...');
+      setFileStatuses(prev => prev.map((status, i) =>
+        i === index ? { ...status, progress: 10 } : status
+      ));
+
+      // Step 2: Upload to storage with progress tracking
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
-        // Track upload progress
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
-            // Progress from 10% to 90% during upload
             const percentComplete = (e.loaded / e.total) * 80 + 10;
-            setUploadProgress(Math.round(percentComplete));
+            setFileStatuses(prev => prev.map((status, i) =>
+              i === index ? { ...status, progress: Math.round(percentComplete) } : status
+            ));
           }
         });
 
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('Step 2 complete: File uploaded to storage successfully');
-            setUploadProgress(90);
+            setFileStatuses(prev => prev.map((status, i) =>
+              i === index ? { ...status, progress: 90 } : status
+            ));
             resolve();
           } else {
-            console.error('Storage upload failed:', xhr.responseText);
-            reject(new Error('Failed to upload file to storage. Please try again.'));
+            reject(new Error('Failed to upload file to storage'));
           }
         });
 
         xhr.addEventListener('error', () => {
-          reject(new Error('Network error during upload. Please try again.'));
-        });
-
-        xhr.addEventListener('abort', () => {
-          reject(new Error('Upload was cancelled.'));
+          reject(new Error('Network error during upload'));
         });
 
         xhr.open('PUT', signedUrl);
@@ -158,9 +178,11 @@ export default function Home() {
         xhr.send(file);
       });
 
-      // Step 3: Finalize upload by creating database record
-      console.log('Step 3: Finalizing upload (creating database record)...');
-      setUploadProgress(95);
+      // Step 3: Finalize upload
+      setFileStatuses(prev => prev.map((status, i) =>
+        i === index ? { ...status, progress: 95 } : status
+      ));
+
       const finalizeResponse = await fetch('/api/files/finalize-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,26 +203,69 @@ export default function Home() {
         throw new Error(data.error || 'Failed to finalize upload');
       }
 
-      console.log('Step 3 complete: Upload finalized successfully!');
-      setUploadProgress(100);
-
       const fullUrl = `${window.location.origin}${data.url}`;
-      setUploadedUrl(fullUrl);
-      toast.success(t.home.uploadSuccess);
-      setFile(null);
 
-      // Reset file input
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      setFileStatuses(prev => prev.map((status, i) =>
+        i === index ? { ...status, progress: 100, status: 'completed' as const, url: fullUrl } : status
+      ));
+
+      return fullUrl;
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error instanceof Error ? error.message : t.home.uploadFailed);
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      setFileStatuses(prev => prev.map((status, i) =>
+        i === index ? { ...status, status: 'error' as const, error: errorMessage } : status
+      ));
+      return null;
+    }
+  };
+
+  const handleBatchUpload = async () => {
+    if (files.length === 0) {
+      toast.error(t.home.pleaseSelectFile);
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Upload files one by one
+      for (let i = 0; i < files.length; i++) {
+        await uploadSingleFile(files[i], i);
+        // Update overall progress
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+      }
+
+      const successCount = fileStatuses.filter(s => s.status === 'completed').length;
+      const errorCount = fileStatuses.filter(s => s.status === 'error').length;
+
+      if (successCount === files.length) {
+        toast.success(`All ${files.length} files uploaded successfully!`);
+      } else if (successCount > 0) {
+        toast.success(`${successCount} of ${files.length} files uploaded successfully`);
+      }
+
+      if (errorCount > 0) {
+        toast.error(`${errorCount} file(s) failed to upload`);
+      }
+
+    } catch (error) {
+      console.error('Batch upload error:', error);
+      toast.error('Batch upload failed');
     } finally {
       setUploading(false);
-      // Hide progress bar after a short delay
       setTimeout(() => setUploadProgress(-1), 500);
     }
   };
+
+  const resetUpload = () => {
+    setFiles([]);
+    setFileStatuses([]);
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const completedUploads = fileStatuses.filter(s => s.status === 'completed');
 
   return (
     <div className="min-h-screen bunny-gradient">
@@ -248,34 +313,60 @@ export default function Home() {
         </Dialog>
       )}
 
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
             {t.home.title}
           </h1>
-          <p className="text-lg text-black dark:text-white">{t.home.subtitle}</p>
+          <p className="text-base sm:text-lg text-black dark:text-white">{t.home.subtitle}</p>
         </div>
 
         {/* Upload Card */}
-        <Card className="bunny-card p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">{t.home.upload}</h2>
+        <Card className="bunny-card p-4 sm:p-6 lg:p-8 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4 sm:mb-6">{t.home.upload}</h2>
 
           <div className="space-y-6">
             <div>
               <Label htmlFor="file-input" className="text-black dark:text-white font-semibold mb-2 block">
                 {t.home.selectFile}
               </Label>
-              <Input
-                id="file-input"
-                type="file"
-                onChange={handleFileChange}
-                className="bunny-input"
-              />
-              {file && (
-                <p className="mt-2 text-sm text-black dark:text-white">
-                  {t.home.selected}: {file.name} ({formatFileSize(file.size)})
-                </p>
+              <div className="relative">
+                <input
+                  id="file-input"
+                  type="file"
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  onClick={() => document.getElementById('file-input')?.click()}
+                  className="w-full bunny-button bg-pink-200 dark:bg-pink-900/30 hover:bg-pink-300 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200 border-2 border-pink-300 dark:border-pink-900/50 min-h-[44px] justify-center"
+                >
+                  {files.length === 0
+                    ? t.home.chooseFiles
+                    : `${files.length} ${t.home.filesSelected}`}
+                </Button>
+              </div>
+              {files.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-white/80 dark:bg-black/30 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-black dark:text-white">{file.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{formatFileSize(file.size)}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 h-8 w-8 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -305,45 +396,114 @@ export default function Home() {
               )}
             </div>
 
-            <Button
-              onClick={handleUpload}
-              disabled={!file || uploading}
-              className="w-full bunny-button bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 hover:from-pink-500 hover:via-purple-500 hover:to-blue-500 text-white py-6 text-lg"
-            >
-              {uploading ? t.home.uploading : t.home.upload}
-            </Button>
+            {/* Individual file upload progress */}
+            {uploading && fileStatuses.length > 0 && (
+              <div className="space-y-2">
+                {fileStatuses.map((status, index) => (
+                  <div key={index} className="p-3 bg-white/60 dark:bg-black/20 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-black dark:text-white truncate max-w-[70%]">
+                        {status.file.name}
+                      </span>
+                      <span className={`text-xs font-semibold ${
+                        status.status === 'completed' ? 'text-green-600 dark:text-green-400' :
+                        status.status === 'error' ? 'text-red-600 dark:text-red-400' :
+                        status.status === 'uploading' ? 'text-blue-600 dark:text-blue-400' :
+                        'text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {status.status === 'completed' ? '✓ Complete' :
+                         status.status === 'error' ? '✗ Failed' :
+                         status.status === 'uploading' ? `${status.progress}%` :
+                         'Waiting...'}
+                      </span>
+                    </div>
+                    {status.status === 'uploading' && (
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${status.progress}%` }}
+                        />
+                      </div>
+                    )}
+                    {status.status === 'error' && status.error && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">{status.error}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={handleBatchUpload}
+                disabled={!files.length || uploading}
+                className="flex-1 bunny-button bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 hover:from-pink-500 hover:via-purple-500 hover:to-blue-500 text-white py-4 sm:py-6 text-base sm:text-lg min-h-[44px]"
+              >
+                {uploading ? t.home.uploading : t.home.upload}
+              </Button>
+              <Button
+                onClick={resetUpload}
+                variant="outline"
+                className="flex-1 bunny-button border-red-300 dark:border-red-900/30 bg-white dark:bg-black/20 hover:bg-red-100 dark:hover:bg-red-950/30 text-red-700 dark:text-red-300 min-h-[44px]"
+              >
+                {t.home.clearAll}
+              </Button>
+            </div>
           </div>
         </Card>
 
         {/* Upload Success */}
-        {uploadedUrl && (
-          <Card className="bunny-card p-6 mb-6">
-            <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-3">{t.home.uploadSuccess}</h3>
-            <div className="bg-white/80 dark:bg-black/30 rounded-2xl p-4 border-2 border-green-300 dark:border-green-900/30">
-              <p className="text-sm text-black dark:text-white mb-2">{t.home.copyLink}:</p>
-              <div className="flex gap-2">
-                <Input
-                  value={uploadedUrl}
-                  readOnly
-                  className="bunny-input"
-                />
+        {completedUploads.length > 0 && (
+          <Card className="bunny-card p-4 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-green-700 dark:text-green-400 mb-3">
+              {completedUploads.length === 1 ? t.home.uploadSuccess : `${completedUploads.length} files uploaded successfully!`}
+            </h3>
+            <div className="bg-white/80 dark:bg-black/30 rounded-2xl p-3 sm:p-4 border-2 border-green-300 dark:border-green-900/30 space-y-3">
+              {completedUploads.map((upload, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-black dark:text-white truncate max-w-[60%]">
+                      {upload.file.name}
+                    </p>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{formatFileSize(upload.file.size)}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      value={upload.url || ''}
+                      readOnly
+                      className="bunny-input flex-1 text-sm"
+                    />
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(upload.url || '');
+                        toast.success(t.home.linkCopied);
+                      }}
+                      className="bunny-button bg-green-300 dark:bg-green-900/50 hover:bg-green-400 dark:hover:bg-green-800/50 text-green-900 dark:text-green-200 min-h-[44px] sm:w-auto w-full"
+                    >
+                      {t.home.copyLink}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {completedUploads.length > 1 && (
                 <Button
                   onClick={() => {
-                    navigator.clipboard.writeText(uploadedUrl);
-                    toast.success(t.home.linkCopied);
+                    const allUrls = completedUploads.map(u => u.url).join('\n');
+                    navigator.clipboard.writeText(allUrls);
+                    toast.success(`All ${completedUploads.length} links copied!`);
                   }}
-                  className="bunny-button bg-green-300 dark:bg-green-900/50 hover:bg-green-400 dark:hover:bg-green-800/50 text-green-900 dark:text-green-200"
+                  className="w-full bunny-button bg-blue-300 dark:bg-blue-900/50 hover:bg-blue-400 dark:hover:bg-blue-800/50 text-blue-900 dark:text-blue-200 min-h-[44px]"
                 >
-                  {t.home.copyLink}
+                  Copy All Links
                 </Button>
-              </div>
+              )}
             </div>
           </Card>
         )}
 
         {/* Statistics Section */}
-        <Card className="bunny-card p-8">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 text-center">
+        <Card className="bunny-card p-4 sm:p-6 lg:p-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4 sm:mb-6 text-center">
             {t.home.statsTitle}
           </h2>
 
@@ -352,21 +512,21 @@ export default function Home() {
               {t.home.loading}
             </div>
           ) : stats ? (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-xl p-6 border border-pink-200 dark:border-pink-900/30 text-center">
-                <p className="text-lg text-black dark:text-white">
-                  Hosting <span className="font-bold text-pink-600 dark:text-pink-400">{stats.totalFiles}</span> files for{' '}
-                  <span className="font-bold text-purple-600 dark:text-purple-400">{stats.totalUsers}</span> users!
+            <div className="space-y-3 sm:space-y-4">
+              <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-xl p-4 sm:p-6 border border-pink-200 dark:border-pink-900/30 text-center">
+                <p className="text-sm sm:text-base lg:text-lg text-black dark:text-white">
+                  {t.home.hostingFiles} <span className="font-bold text-pink-600 dark:text-pink-400">{stats.totalFiles}</span> {t.home.filesFor}{' '}
+                  <span className="font-bold text-purple-600 dark:text-purple-400">{stats.totalUsers}</span> {t.home.users}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-pink-50 dark:from-blue-950/20 dark:to-pink-950/20 rounded-xl p-6 border border-blue-200 dark:border-blue-900/30 text-center">
-                <p className="text-lg text-black dark:text-white">
-                  Currently storing{' '}
+              <div className="bg-gradient-to-br from-blue-50 to-pink-50 dark:from-blue-950/20 dark:to-pink-950/20 rounded-xl p-4 sm:p-6 border border-blue-200 dark:border-blue-900/30 text-center">
+                <p className="text-sm sm:text-base lg:text-lg text-black dark:text-white">
+                  {t.home.currentlyStoring}{' '}
                   <span className="font-bold text-blue-600 dark:text-blue-400">
                     {formatStorageSize(stats.totalStorageBytes)}
                   </span>{' '}
-                  worth of files!
+                  {t.home.worthOfFiles}
                 </p>
               </div>
             </div>
