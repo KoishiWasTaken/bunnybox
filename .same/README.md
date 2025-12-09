@@ -1,3 +1,15 @@
+# Bunnybox Development Notes
+
+## 🚨 IMPORTANT: Git Repository Issue
+**If git commands fail with "not a git repository" error**, see `GIT-TROUBLESHOOTING.md` for the quick fix.
+
+**Quick solution:**
+```bash
+cd /home/project/bunnybox && rm -rf .git && git clone https://github.com/KoishiWasTaken/bunnybox.git temp_repo && cp -r temp_repo/.git ./ && rm -rf temp_repo
+```
+
+---
+
 # BunnyBox - File Hosting Service
 
 ## Current Version: 21
