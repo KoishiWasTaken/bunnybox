@@ -1,4 +1,70 @@
-# bunnybox todos - Version 71: DEPLOYED TO PRODUCTION! 🚀
+<initial_code>
+# bunnybox todos - Version 72: Mobile Support Implementation 📱
+
+## ✅ VERSION 72: MOBILE SUPPORT - COMPLETE! 📱
+
+**Date:** December 9, 2025
+**Status:** ✅ COMPLETE
+**Version:** 72
+
+### 🎯 Task: Mobile-First Responsive Design
+
+**Objective:**
+- Add mobile-responsive navigation with collapsible sidebar
+- Implement hamburger menu icon for mobile devices
+- Ensure all pages are mobile-friendly
+- Add touch-friendly interactions
+- Optimize for all screen sizes
+
+**Features Implemented:**
+- [x] Hamburger menu icon (three-line icon) on mobile
+- [x] Collapsible sidebar navigation with smooth slide animation
+- [x] Mobile-responsive layout for all pages
+- [x] Touch-friendly buttons (minimum 44x44px for mobile)
+- [x] Proper viewport meta tags
+- [x] Mobile-optimized file upload interface
+- [x] Responsive dashboard table (horizontal scroll, hidden columns on mobile)
+- [x] Mobile-friendly auth dialogs
+- [x] Responsive language selector
+- [x] Mobile FAQ accordion
+- [x] Responsive legal pages
+- [x] Mobile settings page
+- [x] Sticky navigation bar on scroll
+- [x] Dark overlay when sidebar is open
+- [x] Auto-close sidebar on navigation
+- [x] Prevent body scroll when sidebar open
+- [x] User info section in mobile sidebar
+- [x] "Signed in as" translation for all 11 languages
+
+**Technical Implementation:**
+- Mobile breakpoint: < 768px (md breakpoint)
+- Sidebar animation: slide in from left with `transform: translateX()`
+- Hamburger menu: lucide-react Menu icon
+- Close button: lucide-react X icon
+- Backdrop overlay for sidebar (black with 50% opacity)
+- Touch-optimized button sizes (min 44x44px)
+- Responsive text sizes using Tailwind's responsive classes
+- Responsive padding and margins across all pages
+- Mobile-first approach with progressive enhancement
+
+**Pages Updated:**
+1. ✅ Navigation component - Full mobile sidebar implementation
+2. ✅ Home page - Responsive layout, touch-friendly buttons
+3. ✅ Dashboard - Responsive table with horizontal scroll
+4. ✅ Settings - Mobile-optimized forms and buttons
+5. ✅ FAQ - Mobile-friendly accordion items
+6. ✅ Legal - Responsive tabs and content
+7. ✅ Layout - Added viewport meta tag
+
+**Testing Recommended:**
+- [ ] Test hamburger menu on mobile devices
+- [ ] Test sidebar slide animation
+- [ ] Test all pages on different screen sizes
+- [ ] Test touch interactions
+- [ ] Test landscape and portrait modes
+- [ ] Test on iOS and Android
+
+---
 
 ## 🎉 VERSION 71 SUCCESSFULLY DEPLOYED! 🚀
 
@@ -225,26 +291,10 @@ bunnybox now supports **11 languages** with **2,090+ translation strings** inclu
 - ✅ Contextual translations (not literal word-for-word)
 - ✅ All toast notifications use selected language
 - ✅ Auth forms fully localized
-- ✅ Professional, natural translations
+- ✅ Professionally, natural translations
 - ✅ Complete FAQ translations for all 11 languages
 - ✅ Dynamic FAQ rendering from translation keys
 - ✅ Search functionality ready for localization
-
-### Technical Implementation:
-- Translation system: `src/lib/translations.ts`
-- Language context: `src/contexts/LanguageContext.tsx`
-- Language selector: `src/components/LanguageSelector.tsx`
-- Auto-detection: Browser language → localStorage → Default (EN)
-
-### What's Working:
-✅ Home page - Complete upload flow, stats, messages
-✅ Dashboard - File management, actions, notifications
-✅ Navigation - All menu items and buttons
-✅ Footer - Localized text
-✅ Auth System - Complete sign in/up/reset flow
-✅ FAQ - **COMPLETE - all 20 Q&A pairs for 11 languages** ✨ UPDATED
-✅ Legal - Page structure and titles
-✅ Toast notifications - All user-facing messages
 
 ### Notes:
 - Core user-facing functionality is 100% translated
@@ -934,3 +984,315 @@ Created:
 **Version:** 47
 
 Made with ❤️ by @.koishi
+</initial_code>
+<edited_code>
+// Batch Upload Feature Component (New Version 73) - added as a new page or component
+
+import { useState, useRef } from 'react'
+import { ClipboardCheck, Paperclip, Trash2, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
+
+// Define translation keys for UI elements
+const translations = {
+  clearAll: {
+    en: 'Clear All',
+    es: 'Limpiar Todo',
+    fr: 'Tout Effacer',
+    ja: 'すべてクリア',
+    zh: '全部清除',
+    it: 'Cancella Tutto',
+    vi: 'Xóa tất cả',
+    de: 'Alle löschen',
+    ko: '모두 지우기',
+    pt: 'Limpar Tudo',
+    ru: 'Очистить все'
+  }
+}
+
+// Utility function for translations
+function t(key, lang) {
+  return translations[key][lang] || translations[key]['en']
+}
+
+export default function BatchUpload() {
+  const [files, setFiles] = useState([])
+  const [uploadProgress, setUploadProgress] = useState({})
+  const [uploadStatus, setUploadStatus] = useState({})
+  const [uploadedUrls, setUploadedUrls] = useState([])
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef(null)
+  const [error, setError] = useState(null)
+  const [overallProgress, setOverallProgress] = useState(0)
+  const [showProgress, setShowProgress] = useState(false)
+  const [copyAllSuccess, setCopyAllSuccess] = useState(false)
+
+  const selectedLang = 'en' // Placeholder, replace this with actual language context or state
+
+  const handleFileSelect = (e) => {
+    // Limit to 10 files
+    const selectedFiles = Array.from(e.target.files).slice(0, 10)
+    // Map files to include id for React key
+    const filesWithId = selectedFiles.map((file, index) => ({
+      file,
+      id: Date.now() + index,
+      status: 'pending',
+      url: ''
+    }))
+    setFiles(filesWithId)
+    setUploadProgress({})
+    setUploadStatus({})
+    setUploadedUrls([])
+    setError(null)
+  }
+
+  const removeFile = (id) => {
+    setFiles(prev => prev.filter(f => f.id !== id))
+  }
+
+  const handleClearAll = () => {
+    setFiles([])
+    setUploadProgress({})
+    setUploadStatus({})
+    setUploadedUrls([])
+  }
+
+  const handleCopyAll = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(uploadedUrls.join('\n')).then(() => {
+        setCopyAllSuccess(true)
+        setTimeout(() => setCopyAllSuccess(false), 2000)
+      })
+    }
+  }
+
+  const uploadFiles = async () => {
+    if (files.length === 0 || isUploading) return
+    setIsUploading(true)
+    setError(null)
+
+    let totalBytes = files.reduce((sum, f) => sum + f.file.size, 0)
+    let uploadedBytes = 0
+
+    // Sequential upload
+    const urls = []
+    for (let index = 0; index < files.length; index++) {
+      const fileObj = files[index]
+      try {
+        // Update status to uploading
+        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'uploading' }))
+
+        // Upload file to server
+        // Replace with actual upload API call, e.g. fetch/axios to /api/files/upload
+        // For demo, simulate upload with timeout and progress
+
+        const uploadPromise = new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.open('POST', '/api/files/upload')
+          xhr.setRequestHeader('Content-Type', 'application/json')
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              // Assume response contains the file URL
+              const response = JSON.parse(xhr.responseText)
+              resolve(response.url)
+            } else {
+              reject(new Error('Upload failed'))
+            }
+          }
+          xhr.onerror = () => reject(new Error('Network error'))
+
+          // Track progress
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const percent = (e.loaded / e.total) * 100
+              // Update individual progress
+              setUploadProgress(prev => ({ ...prev, [fileObj.id]: percent }))
+            }
+          }
+
+          const reader = new FileReader()
+          reader.onload = () => {
+            const base64Data = reader.result.split(',')[1]
+            xhr.send(JSON.stringify({ filename: fileObj.file.name, data: base64Data }))
+          }
+          reader.onerror = () => reject(new Error('File read error'))
+          reader.readAsDataURL(fileObj.file)
+        })
+
+        // After upload completes
+        setUploadProgress(prev => ({ ...prev, [fileObj.id]: 100 }))
+        // Simulate server response with URL
+        const url = `/f/${fileObj.file.name}-${fileObj.id}`
+        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'completed' }))
+        urls.push(url)
+        setUploadedUrls(prev => [...prev, url])
+      } catch (err) {
+        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'error' }))
+      }
+    }
+    setIsUploading(false)
+  }
+
+  // Calculate overall progress
+  const handleProgress = () => {
+    const totalProgress = Object.values(uploadProgress).reduce((sum, p) => sum + p, 0)
+    const totalFiles = files.length
+    const overall = totalFiles === 0 ? 0 : Math.round(totalProgress / totalFiles)
+    setOverallProgress(overall)
+  }
+
+  // Update overall progress when individual progresses change
+  React.useEffect(() => {
+    handleProgress()
+  }, [uploadProgress])
+
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h2 className="text-xl font-semibold mb-4">{'Batch Upload'}</h2>
+      <input
+        type="file"
+        multiple
+        accept="*"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        className="mb-4"
+        disabled={isUploading}
+      />
+      <div className="mb-4 flex space-x-2">
+        <button
+          onClick={() =>
+            fileInputRef.current && fileInputRef.current.click()
+          }
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+          disabled={isUploading}
+        >
+          {'Select Files (max 10)'}
+        </button>
+        <button
+          onClick={handleClearAll}
+          className="px-4 py-2 bg-gray-300 rounded"
+        >
+          {t('clearAll', selectedLang)}
+        </button>
+        <button
+          onClick={uploadFiles}
+          className="px-4 py-2 bg-green-600 text-white rounded"
+          disabled={isUploading || files.length === 0}
+        >
+          {isUploading ? 'Uploading...' : 'Start Upload'}
+        </button>
+        {uploadedUrls.length > 0 && (
+          <button
+            onClick={handleCopyAll}
+            className="px-4 py-2 bg-purple-600 text-white rounded"
+          >
+            {copyAllSuccess ? 'Copied!' : 'Copy All Links'}
+          </button>
+        )}
+      </div>
+
+      {files.length > 0 && (
+        <div className="overflow-x-auto mb-4 border rounded shadow-sm">
+          <table className="w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left text-sm">File Name</th>
+                <th className="px-4 py-2 text-left text-sm">Size</th>
+                <th className="px-4 py-2 text-left text-sm">Status</th>
+                <th className="px-4 py-2 text-left text-sm">Progress</th>
+                <th className="px-4 py-2 text-left text-sm">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {files.map((f) => (
+                <tr key={f.id} className="border-b last:border-b-0">
+                  <td className="px-4 py-2 text-sm">{f.file.name}</td>
+                  <td className="px-4 py-2 text-sm">{(f.file.size / 1024).toFixed(2)} KB</td>
+                  <td className="px-4 py-2 text-sm uppercase">
+                    {uploadStatus[f.id] === 'pending' && 'Pending'}
+                    {uploadStatus[f.id] === 'uploading' && 'Uploading'}
+                    {uploadStatus[f.id] === 'completed' && 'Completed'}
+                    {uploadStatus[f.id] === 'error' && 'Error'}
+                  </td>
+                  <td className="px-4 py-2 text-sm w-48">
+                    <div className="h-1 bg-gray-200 rounded">
+                      <div
+                        className={`h-1 rounded ${
+                          uploadStatus[f.id] === 'error'
+                            ? 'bg-red-500'
+                            : 'bg-blue-600'
+                        }`}
+                        style={{ width: `${uploadProgress[f.id] || 0}%` }}
+                      ></div>
+                    </div>
+                    {Math.round(uploadProgress[f.id] || 0)}%
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap space-x-2">
+                    {uploadStatus[f.id] === 'completed' && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(f.url)
+                        }}
+                        className="p-2 bg-green-100 rounded hover:bg-green-200"
+                        title="Copy URL"
+                      >
+                        <ClipboardCheck className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removeFile(f.id)}
+                      className="p-2 bg-red-100 rounded hover:bg-red-200"
+                      title="Remove"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showProgress && (
+        <div className="w-full bg-gray-200 rounded h-2 mb-4">
+          <div
+            className="h-2 bg-gradient-to-r from-pink-400 via-purple-500 to-blue-500 rounded"
+            style={{ width: `${overallProgress}%`, transition: 'width 0.2s' }}
+          ></div>
+        </div>
+      )}
+
+      {uploadedUrls.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Uploaded Files</h3>
+          <ul className="space-y-2 max-h-60 overflow-y-auto border p-2 rounded bg-gray-50">
+            {uploadedUrls.map((url, idx) => (
+              <li key={idx} className="flex items-center justify-between space-x-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={url}
+                  className="flex-1 border rounded px-2 py-1 text-sm"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(url)
+                  }}
+                  className="p-2 bg-green-100 rounded hover:bg-green-200"
+                  title="Copy URL"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-4 text-red-500">{error}</div>
+      )}
+    </div>
+  )
+}
+</edited_code>
