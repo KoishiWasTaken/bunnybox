@@ -25,7 +25,7 @@ export function Footer() {
         </span>
       </p>
       <p className="text-sm text-black dark:text-white mt-1">
-        If you liked my service, feel free to share it with others! ^^
+        {t.footer.shareMessage} ^^
       </p>
     </footer>
   );
