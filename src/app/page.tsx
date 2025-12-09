@@ -444,7 +444,7 @@ export default function Home() {
               <Button
                 onClick={resetUpload}
                 variant="outline"
-                className="flex-1 bunny-button border-red-300 dark:border-red-900/30 bg-white dark:bg-black/20 hover:bg-red-100 dark:hover:bg-red-950/30 text-red-700 dark:text-red-300 min-h-[44px]"
+                className="flex-1 bunny-button border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-950/70 text-red-700 dark:text-red-400 min-h-[44px]"
               >
                 {t.home.clearAll}
               </Button>
