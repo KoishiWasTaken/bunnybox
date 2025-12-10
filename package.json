@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "bunx tsc --noEmit && next lint",
     "format": "bunx biome format --write",
-    "cleanup": "bun run scripts/manual-cleanup.ts"
+    "cleanup": "bun run scripts/manual-cleanup.ts",
+    "recover": "bun run scripts/recover-storage-files.ts",
+    "restore": "bun run scripts/restore-deleted-files.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

@@ -41,17 +41,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Delete orphaned/failed uploads (files with no data AND no chunks)
+    // 2. Delete orphaned/failed uploads (files with no data AND no chunks AND no storage)
     const { data: potentialOrphans } = await supabaseAdmin
       .from('files')
-      .select('id, file_data')
+      .select('id, file_data, storage_path')
       .or('file_data.is.null,file_data.eq.');
 
     if (potentialOrphans && potentialOrphans.length > 0) {
-      // Check each file to see if it has chunks (chunked files have null file_data but are valid)
+      // Check each file to see if it has chunks or storage (these are valid files)
       const trueOrphans: string[] = [];
 
       for (const file of potentialOrphans) {
+        // Skip files that have storage_path (these are valid storage-based files)
+        if (file.storage_path) {
+          continue;
+        }
+
         // Check if this file has chunks
         const { data: chunks } = await supabaseAdmin
           .from('file_chunks')
@@ -59,7 +64,7 @@ export async function POST(request: NextRequest) {
           .eq('file_id', file.id)
           .limit(1);
 
-        // If no chunks exist, this is truly orphaned
+        // If no chunks exist AND no storage_path, this is truly orphaned
         if (!chunks || chunks.length === 0) {
           trueOrphans.push(file.id);
         }
