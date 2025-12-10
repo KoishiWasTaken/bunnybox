@@ -1,4 +1,257 @@
-<initial_code>
+# bunnybox todos - Version 79: Admin Panel Media Previews 🖼️
+
+## ✅ VERSION 79: ADMIN PANEL MEDIA PREVIEWS - COMPLETE!
+
+**Date:** December 10, 2025
+**Status:** ✅ COMPLETE
+**Version:** 79
+
+### 🎯 Task: Add Image & Video Previews to Admin Panel
+
+**Objective:**
+Add visual previews (thumbnails) for images and videos in the admin panel's file list to enable faster content moderation.
+
+### ✅ What Was Implemented
+
+**1. FilePreview Component** (`src/components/FilePreview.tsx`)
+- Smart preview component that detects file type
+- Shows image thumbnails with Next.js Image optimization
+- Displays video previews with play icon overlay
+- Fallback to file icon for non-media files
+- Hover effects for better UX
+- Handles both storage-based and base64 files
+- Error handling for failed media loads
+- 80x80px thumbnails optimized for table view
+
+**2. Admin Panel Updates** (`src/app/admin/panel/page.tsx`)
+- Added "Preview" column to files table
+- Updated FileUpload interface to include:
+  - `storage_path`
+  - `uses_storage`
+  - `file_data`
+- Integrated FilePreview component
+- Maintains all existing functionality
+
+### 📋 Features
+
+**Image Previews:**
+- ✅ Thumbnail display (80x80px)
+- ✅ Object-fit cover for proper aspect ratio
+- ✅ Hover overlay with image icon
+- ✅ Next.js Image optimization
+- ✅ Error fallback to file icon
+
+**Video Previews:**
+- ✅ First frame thumbnail
+- ✅ Play icon overlay
+- ✅ Muted preview (no auto-play)
+- ✅ Hover darkening effect
+- ✅ Error fallback to file icon
+
+**Non-Media Files:**
+- ✅ Generic file icon
+- ✅ Consistent styling
+- ✅ Same size as media previews
+
+### 🎨 Design Details
+
+**Preview Size:** 80x80px square thumbnails
+**Styling:** Rounded corners, consistent with bunnybox aesthetic
+**Icons Used:**
+- `FileIcon` - Generic files
+- `ImageIcon` - Image hover overlay
+- `PlayCircle` - Video play indicator
+
+### 🚀 Benefits for Moderation
+
+**Before:**
+- Had to click "View" for every file
+- No visual scanning capability
+- Slow moderation process
+- Difficult to spot inappropriate content quickly
+
+**After:**
+- ✅ Instant visual scanning of all media
+- ✅ Quick identification of inappropriate content
+- ✅ Faster moderation workflow
+- ✅ Hover to see file type
+- ✅ One-glance content review
+
+### 📊 Technical Implementation
+
+**File URL Resolution:**
+```typescript
+// Storage-based files
+${SUPABASE_URL}/storage/v1/object/public/bunnybox-files/${storagePath}
+
+// Base64 embedded files
+data:${mimeType};base64,${fileData}
+```
+
+**Error Handling:**
+- Image load errors → fallback to file icon
+- Video load errors → fallback to file icon
+- Missing data → show file icon
+
+### 🔧 Files Changed
+
+- [x] `src/components/FilePreview.tsx` - New preview component
+- [x] `src/app/admin/panel/page.tsx` - Updated admin panel
+- [x] Interface updates for FileUpload type
+- [x] Added import for FilePreview
+- [x] Updated table structure with preview column
+
+### ✅ Testing Checklist
+
+- [x] Linting passes
+- [x] TypeScript compiles
+- [x] Component created and integrated
+- [ ] Test with actual images
+- [ ] Test with actual videos
+- [ ] Test with non-media files
+- [ ] Test error handling
+- [ ] Deploy to production
+
+### 🎯 Next Steps
+
+Possible enhancements:
+- Add lightbox/modal for full-size preview on click
+- Add video playback controls
+- Show file type badge
+- Add MIME type filtering
+- Bulk moderation actions with previews
+
+---
+
+# bunnybox todos - Version 78: CRITICAL Cleanup Bug Fix 🚨
+
+## 🚨 VERSION 78: CRITICAL CLEANUP BUG FIX - COMPLETE!
+
+**Date:** December 10, 2025
+**Status:** ✅ FIXED
+**Severity:** CRITICAL
+**Version:** 78
+
+### 🐛 Critical Bug Discovery
+
+**The Problem:**
+The automated cleanup system (v21+) was incorrectly deleting database records for files stored in Supabase Storage. Files were marked as "Never expire" but their database records were being deleted during the daily cleanup at 2 AM UTC.
+
+**Root Cause:**
+The orphaned files detection logic was checking for:
+- ❌ `file_data` (base64 in database)
+- ❌ `chunks` (chunked uploads)
+- 🚨 **BUT NOT checking for `storage_path` (storage-based files)**
+
+This caused ALL storage-based files to be considered "orphaned" and deleted!
+
+### ✅ The Fix
+
+**File Modified:** `src/app/api/cleanup/route.ts`
+
+**Key Change:**
+```typescript
+// Now checks for storage_path before deleting
+if (file.storage_path) {
+  continue; // Skip storage-based files (they're valid!)
+}
+```
+
+The cleanup now properly excludes files with a `storage_path` from being considered orphaned.
+
+### 🔧 Recovery Tools Created
+
+**1. Recovery Scanner** (`scripts/recover-storage-files.ts`)
+- Scans Supabase Storage for orphaned files
+- Lists files that exist in storage but not in database
+- Command: `bun run recover`
+
+**2. Auto-Restoration** (`scripts/restore-deleted-files.ts`)
+- Automatically restores database records for orphaned files
+- Requires user ID as parameter
+- Command: `bun run restore <user_id>`
+- Restores files with "Never expire" setting
+
+**3. Package.json Scripts**
+- Added `bun run recover` - Scan for orphaned files
+- Added `bun run restore <user_id>` - Restore deleted files
+
+### 📋 Files Changed
+
+- [x] `src/app/api/cleanup/route.ts` - Fixed orphaned files detection
+- [x] `scripts/recover-storage-files.ts` - New recovery scanner
+- [x] `scripts/restore-deleted-files.ts` - New auto-restoration tool
+- [x] `package.json` - Added recovery scripts
+- [x] `.same/CRITICAL-CLEANUP-BUG-FIX.md` - Complete documentation
+- [x] `.same/todos.md` - This file
+
+### 🎯 Impact
+
+**Affected:**
+- Users who uploaded files via batch upload
+- Storage-based file uploads (most modern uploads)
+- Files uploaded between v21 (cleanup introduction) and today
+
+**Lost:**
+- ❌ Database records (file metadata)
+- ❌ Upload/view counts
+- ❌ File statistics
+
+**Preserved:**
+- ✅ Actual files in Supabase Storage
+- ✅ User accounts
+- ✅ All other data
+
+### 🚀 User Recovery Instructions
+
+**For Affected Users:**
+
+1. **Get your User ID:**
+   - Sign in to bunnybox
+   - Open browser console (F12)
+   - Run: `localStorage.getItem("sb-puqcpwznfkpchfxhiglh-auth-token")`
+   - Copy the `user.id` value
+
+2. **Scan for orphaned files:**
+   ```bash
+   cd bunnybox
+   bun run recover
+   ```
+
+3. **Restore files:**
+   ```bash
+   bun run restore YOUR_USER_ID
+   ```
+
+4. **Verify:**
+   - Visit https://bunnybox.moe/dashboard
+   - Files should be back!
+
+### 📊 Testing Checklist
+
+- [x] Fix prevents storage files from being deleted
+- [x] Recovery scanner works correctly
+- [x] Auto-restoration creates valid database records
+- [ ] Deploy to production
+- [ ] Test on production environment
+- [ ] Monitor cleanup logs
+- [ ] Verify file counts remain stable
+
+### 🔐 Security Notes
+
+- Recovery scripts require `SUPABASE_SERVICE_ROLE_KEY`
+- User must provide their own user ID
+- Files restored with original metadata
+- Set to "Never expire" by default
+
+### 📖 Documentation
+
+Complete documentation in:
+- `.same/CRITICAL-CLEANUP-BUG-FIX.md` - Full bug report and recovery guide
+- This todos file - Quick reference
+
+---
+
 # bunnybox todos - Version 72: Mobile Support Implementation 📱
 
 ## ✅ VERSION 72: MOBILE SUPPORT - COMPLETE! 📱
@@ -190,14 +443,13 @@ Users can now navigate the **entire application** in their language:
 🇬🇧 🇪🇸 🇫🇷 🇯🇵 🇨🇳 🇮🇹 🇻🇳 🇩🇪 🇰🇷 🇵🇹 🇷🇺
 
 ### 📝 Note on Legal Content
-
 The **actual legal document content** (terms, policies, etc.) remains in English. This is appropriate because:
 - Legal documents often need to remain in English for legal validity
 - Professional legal translation is required for accuracy
 - Legal review is needed for each language
 - Very large volume of specialized text
 
-**For the future**: Legal content translation should be done with professional legal translation services to ensure accuracy and legal compliance.
+**For the future:** Legal content translation should be done with professional legal translation services to ensure accuracy and legal compliance.
 
 ---
 
@@ -574,9 +826,7 @@ User tried uploading "main.mp4" (41.84MB) and got error: "Server returned an inv
    - 26-second timeout (vs 10s)
    - Quick fix but still has limits
 
----
-
-## 🎉 Versions 53-54 Successfully Deployed!
+### 🎉 Versions 53-54 Successfully Deployed!
 
 **Live URL:** https://bunnybox.moe
 **Preview URL:** https://692757d66d1ec61019324159--bunbox.netlify.app
@@ -625,18 +875,18 @@ User tried uploading "main.mp4" (41.84MB) and got error: "Server returned an inv
 
 ### ✅ Completed Features
 
-**Text Colors (76 changes across 12 files)**
+**Text Colors (76 changes across 12 files):**
 - All grey text replaced with black/white for better contrast
 - Consistent theme across all pages
 - Improved readability in both light and dark modes
 
-**Email Rate Limiting**
+**Email Rate Limiting:**
 - 30-second cooldown between email requests ⏱️
 - 5 email maximum per user (lifetime) 🔢
 - Prevents spam and conserves API credits 💰
 - Clear error messages to users 💬
 
-**Contact Information**
+**Contact Information:**
 - All legal pages updated with support@bunnybox.moe 📧
 - Proper mailto: links throughout
 - Discord contact still available
@@ -984,315 +1234,3 @@ Created:
 **Version:** 47
 
 Made with ❤️ by @.koishi
-</initial_code>
-<edited_code>
-// Batch Upload Feature Component (New Version 73) - added as a new page or component
-
-import { useState, useRef } from 'react'
-import { ClipboardCheck, Paperclip, Trash2, X } from 'lucide-react'
-import { createPortal } from 'react-dom'
-
-// Define translation keys for UI elements
-const translations = {
-  clearAll: {
-    en: 'Clear All',
-    es: 'Limpiar Todo',
-    fr: 'Tout Effacer',
-    ja: 'すべてクリア',
-    zh: '全部清除',
-    it: 'Cancella Tutto',
-    vi: 'Xóa tất cả',
-    de: 'Alle löschen',
-    ko: '모두 지우기',
-    pt: 'Limpar Tudo',
-    ru: 'Очистить все'
-  }
-}
-
-// Utility function for translations
-function t(key, lang) {
-  return translations[key][lang] || translations[key]['en']
-}
-
-export default function BatchUpload() {
-  const [files, setFiles] = useState([])
-  const [uploadProgress, setUploadProgress] = useState({})
-  const [uploadStatus, setUploadStatus] = useState({})
-  const [uploadedUrls, setUploadedUrls] = useState([])
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef(null)
-  const [error, setError] = useState(null)
-  const [overallProgress, setOverallProgress] = useState(0)
-  const [showProgress, setShowProgress] = useState(false)
-  const [copyAllSuccess, setCopyAllSuccess] = useState(false)
-
-  const selectedLang = 'en' // Placeholder, replace this with actual language context or state
-
-  const handleFileSelect = (e) => {
-    // Limit to 10 files
-    const selectedFiles = Array.from(e.target.files).slice(0, 10)
-    // Map files to include id for React key
-    const filesWithId = selectedFiles.map((file, index) => ({
-      file,
-      id: Date.now() + index,
-      status: 'pending',
-      url: ''
-    }))
-    setFiles(filesWithId)
-    setUploadProgress({})
-    setUploadStatus({})
-    setUploadedUrls([])
-    setError(null)
-  }
-
-  const removeFile = (id) => {
-    setFiles(prev => prev.filter(f => f.id !== id))
-  }
-
-  const handleClearAll = () => {
-    setFiles([])
-    setUploadProgress({})
-    setUploadStatus({})
-    setUploadedUrls([])
-  }
-
-  const handleCopyAll = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(uploadedUrls.join('\n')).then(() => {
-        setCopyAllSuccess(true)
-        setTimeout(() => setCopyAllSuccess(false), 2000)
-      })
-    }
-  }
-
-  const uploadFiles = async () => {
-    if (files.length === 0 || isUploading) return
-    setIsUploading(true)
-    setError(null)
-
-    let totalBytes = files.reduce((sum, f) => sum + f.file.size, 0)
-    let uploadedBytes = 0
-
-    // Sequential upload
-    const urls = []
-    for (let index = 0; index < files.length; index++) {
-      const fileObj = files[index]
-      try {
-        // Update status to uploading
-        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'uploading' }))
-
-        // Upload file to server
-        // Replace with actual upload API call, e.g. fetch/axios to /api/files/upload
-        // For demo, simulate upload with timeout and progress
-
-        const uploadPromise = new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest()
-          xhr.open('POST', '/api/files/upload')
-          xhr.setRequestHeader('Content-Type', 'application/json')
-          xhr.onload = () => {
-            if (xhr.status === 200) {
-              // Assume response contains the file URL
-              const response = JSON.parse(xhr.responseText)
-              resolve(response.url)
-            } else {
-              reject(new Error('Upload failed'))
-            }
-          }
-          xhr.onerror = () => reject(new Error('Network error'))
-
-          // Track progress
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              const percent = (e.loaded / e.total) * 100
-              // Update individual progress
-              setUploadProgress(prev => ({ ...prev, [fileObj.id]: percent }))
-            }
-          }
-
-          const reader = new FileReader()
-          reader.onload = () => {
-            const base64Data = reader.result.split(',')[1]
-            xhr.send(JSON.stringify({ filename: fileObj.file.name, data: base64Data }))
-          }
-          reader.onerror = () => reject(new Error('File read error'))
-          reader.readAsDataURL(fileObj.file)
-        })
-
-        // After upload completes
-        setUploadProgress(prev => ({ ...prev, [fileObj.id]: 100 }))
-        // Simulate server response with URL
-        const url = `/f/${fileObj.file.name}-${fileObj.id}`
-        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'completed' }))
-        urls.push(url)
-        setUploadedUrls(prev => [...prev, url])
-      } catch (err) {
-        setUploadStatus(prev => ({ ...prev, [fileObj.id]: 'error' }))
-      }
-    }
-    setIsUploading(false)
-  }
-
-  // Calculate overall progress
-  const handleProgress = () => {
-    const totalProgress = Object.values(uploadProgress).reduce((sum, p) => sum + p, 0)
-    const totalFiles = files.length
-    const overall = totalFiles === 0 ? 0 : Math.round(totalProgress / totalFiles)
-    setOverallProgress(overall)
-  }
-
-  // Update overall progress when individual progresses change
-  React.useEffect(() => {
-    handleProgress()
-  }, [uploadProgress])
-
-  return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-semibold mb-4">{'Batch Upload'}</h2>
-      <input
-        type="file"
-        multiple
-        accept="*"
-        ref={fileInputRef}
-        onChange={handleFileSelect}
-        className="mb-4"
-        disabled={isUploading}
-      />
-      <div className="mb-4 flex space-x-2">
-        <button
-          onClick={() =>
-            fileInputRef.current && fileInputRef.current.click()
-          }
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-          disabled={isUploading}
-        >
-          {'Select Files (max 10)'}
-        </button>
-        <button
-          onClick={handleClearAll}
-          className="px-4 py-2 bg-gray-300 rounded"
-        >
-          {t('clearAll', selectedLang)}
-        </button>
-        <button
-          onClick={uploadFiles}
-          className="px-4 py-2 bg-green-600 text-white rounded"
-          disabled={isUploading || files.length === 0}
-        >
-          {isUploading ? 'Uploading...' : 'Start Upload'}
-        </button>
-        {uploadedUrls.length > 0 && (
-          <button
-            onClick={handleCopyAll}
-            className="px-4 py-2 bg-purple-600 text-white rounded"
-          >
-            {copyAllSuccess ? 'Copied!' : 'Copy All Links'}
-          </button>
-        )}
-      </div>
-
-      {files.length > 0 && (
-        <div className="overflow-x-auto mb-4 border rounded shadow-sm">
-          <table className="w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-left text-sm">File Name</th>
-                <th className="px-4 py-2 text-left text-sm">Size</th>
-                <th className="px-4 py-2 text-left text-sm">Status</th>
-                <th className="px-4 py-2 text-left text-sm">Progress</th>
-                <th className="px-4 py-2 text-left text-sm">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {files.map((f) => (
-                <tr key={f.id} className="border-b last:border-b-0">
-                  <td className="px-4 py-2 text-sm">{f.file.name}</td>
-                  <td className="px-4 py-2 text-sm">{(f.file.size / 1024).toFixed(2)} KB</td>
-                  <td className="px-4 py-2 text-sm uppercase">
-                    {uploadStatus[f.id] === 'pending' && 'Pending'}
-                    {uploadStatus[f.id] === 'uploading' && 'Uploading'}
-                    {uploadStatus[f.id] === 'completed' && 'Completed'}
-                    {uploadStatus[f.id] === 'error' && 'Error'}
-                  </td>
-                  <td className="px-4 py-2 text-sm w-48">
-                    <div className="h-1 bg-gray-200 rounded">
-                      <div
-                        className={`h-1 rounded ${
-                          uploadStatus[f.id] === 'error'
-                            ? 'bg-red-500'
-                            : 'bg-blue-600'
-                        }`}
-                        style={{ width: `${uploadProgress[f.id] || 0}%` }}
-                      ></div>
-                    </div>
-                    {Math.round(uploadProgress[f.id] || 0)}%
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap space-x-2">
-                    {uploadStatus[f.id] === 'completed' && (
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(f.url)
-                        }}
-                        className="p-2 bg-green-100 rounded hover:bg-green-200"
-                        title="Copy URL"
-                      >
-                        <ClipboardCheck className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => removeFile(f.id)}
-                      className="p-2 bg-red-100 rounded hover:bg-red-200"
-                      title="Remove"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {showProgress && (
-        <div className="w-full bg-gray-200 rounded h-2 mb-4">
-          <div
-            className="h-2 bg-gradient-to-r from-pink-400 via-purple-500 to-blue-500 rounded"
-            style={{ width: `${overallProgress}%`, transition: 'width 0.2s' }}
-          ></div>
-        </div>
-      )}
-
-      {uploadedUrls.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Uploaded Files</h3>
-          <ul className="space-y-2 max-h-60 overflow-y-auto border p-2 rounded bg-gray-50">
-            {uploadedUrls.map((url, idx) => (
-              <li key={idx} className="flex items-center justify-between space-x-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={url}
-                  className="flex-1 border rounded px-2 py-1 text-sm"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(url)
-                  }}
-                  className="p-2 bg-green-100 rounded hover:bg-green-200"
-                  title="Copy URL"
-                >
-                  <ClipboardCheck className="w-4 h-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {error && (
-        <div className="mt-4 text-red-500">{error}</div>
-      )}
-    </div>
-  )
-}
-</edited_code>

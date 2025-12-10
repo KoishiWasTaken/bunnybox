@@ -54,5 +54,61 @@ There is no known prevention for this issue in the Same environment. Simply use 
 
 ---
 
-**Last Updated**: December 9, 2025
+## ⚠️ IMPORTANT: Systematic Commits to Prevent Data Loss
+
+After fixing the `.git` directory, **ALWAYS commit changes systematically in chronological order** when pushing to GitHub for auto-deployment.
+
+### Why This Matters
+
+Committing versions out of order or squashing multiple versions into one commit makes it impossible to:
+- Track when specific features were added
+- Revert to a specific version safely
+- Debug issues between versions
+- Maintain clear project history
+
+### ✅ Correct Workflow
+
+**Always commit from production version → current Same version:**
+
+```bash
+# 1. Check production version
+git log --oneline -1
+
+# 2. Check current Same version
+cat .same/todos.md | head -20
+
+# 3. Commit each version individually in order
+# Example: Production is v77, Same is at v79
+
+# Commit v78
+git add .
+git commit -m "v78: Critical cleanup bug fix + recovery tools
+
+- Fixed orphaned files detection
+- Added recovery tools
+
+🤖 Generated with Same (https://same.new)
+Co-Authored-By: Same <noreply@same.new>"
+
+# Then commit v79
+git add .
+git commit -m "v79: Admin panel media previews
+
+- Added image/video thumbnails
+- Faster moderation
+
+🤖 Generated with Same (https://same.new)
+Co-Authored-By: Same <noreply@same.new>"
+
+# Push all commits
+git push origin main
+```
+
+### 📋 Full Documentation
+
+See **README.md** section "CRITICAL: Systematic Git Commits to Prevent Data Loss" for complete guidelines.
+
+---
+
+**Last Updated**: December 10, 2025
 **Issue Frequency**: High (occurs after session restarts or extended periods)

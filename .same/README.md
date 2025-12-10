@@ -8,6 +8,126 @@
 cd /home/project/bunnybox && rm -rf .git && git clone https://github.com/KoishiWasTaken/bunnybox.git temp_repo && cp -r temp_repo/.git ./ && rm -rf temp_repo
 ```
 
+## ⚠️ CRITICAL: Systematic Git Commits to Prevent Data Loss
+
+**When committing changes to GitHub for auto-deployment, ALWAYS commit systematically in chronological order.**
+
+### The Problem
+If commits are made out of order or multiple versions are squashed into one commit, it becomes impossible to:
+- Track when specific features were added
+- Revert to a specific version if issues arise
+- Understand the progression of changes
+- Debug issues that occurred between versions
+
+### ✅ Correct Workflow
+
+**ALWAYS commit in chronological order from production → current:**
+
+1. **Identify the version gap:**
+   ```bash
+   # Check latest production version
+   git log --oneline -1
+
+   # Current version in Same environment (check todos.md or version history)
+   ```
+
+2. **Commit each version individually:**
+   ```bash
+   # Example: Production is v77, Same is at v79
+
+   # Commit v78 first
+   git add .
+   git commit -m "v78: Critical cleanup bug fix + recovery tools
+
+   - Fixed orphaned files detection in cleanup system
+   - Added storage_path check to prevent deletion
+   - Created recovery scanner (bun run recover)
+   - Created auto-restoration (bun run restore)
+
+   🤖 Generated with Same (https://same.new)
+   Co-Authored-By: Same <noreply@same.new>"
+
+   # Then commit v79
+   git add .
+   git commit -m "v79: Admin panel media previews
+
+   - Added FilePreview component for thumbnails
+   - Image and video previews in admin panel
+   - Faster content moderation workflow
+
+   🤖 Generated with Same (https://same.new)
+   Co-Authored-By: Same <noreply@same.new>"
+
+   # Push all commits
+   git push origin main
+   ```
+
+3. **Verify commit history:**
+   ```bash
+   git log --oneline -5
+   # Should show v77 → v78 → v79 in order
+   ```
+
+### 📋 Commit Message Template
+
+```
+v[VERSION]: [Brief title]
+
+- [Feature/change 1]
+- [Feature/change 2]
+- [Feature/change 3]
+
+🤖 Generated with Same (https://same.new)
+Co-Authored-By: Same <noreply@same.new>
+```
+
+### 🚫 What NOT to Do
+
+❌ **Don't squash multiple versions into one commit:**
+```bash
+# WRONG: Combining v78 and v79
+git commit -m "Various updates and fixes"
+```
+
+❌ **Don't commit out of chronological order:**
+```bash
+# WRONG: Committing v79 before v78
+```
+
+❌ **Don't use vague commit messages:**
+```bash
+# WRONG: No context about what changed
+git commit -m "Updates"
+```
+
+### ✅ Why This Matters
+
+**Benefits of systematic commits:**
+- 🔍 **Traceable history** - Know exactly when each feature was added
+- 🔄 **Easy rollback** - Revert to any specific version
+- 📊 **Clear changelog** - Automatic version history
+- 🐛 **Better debugging** - Isolate which version introduced issues
+- 🚀 **Safer deployments** - Can deploy incrementally if needed
+- 📖 **Documentation** - Commit messages become project history
+
+**Example of good history:**
+```
+abc1234 v79: Admin panel media previews
+def5678 v78: Critical cleanup bug fix + recovery tools
+ghi9012 v77: Spanish translation hotfix
+jkl3456 v76: Clear all button color fix
+```
+
+### 🔧 Quick Reference
+
+**Before committing to GitHub:**
+1. Check current production version (`git log`)
+2. Check current Same version (`cat .same/todos.md`)
+3. Commit each version gap individually
+4. Use descriptive commit messages with version numbers
+5. Verify commit order before pushing
+6. Push all commits at once
+
 ---
 
 # BunnyBox - File Hosting Service
