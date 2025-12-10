@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         {
-          error: 'Failed to parse upload data. The file may be too large or corrupted. Maximum file size is 100MB.'
+          error: 'Failed to parse upload data. The file may be too large or corrupted. Maximum file size is 50MB.'
         },
         { status: 400 }
       );

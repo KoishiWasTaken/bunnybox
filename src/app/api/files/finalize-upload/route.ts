@@ -67,9 +67,34 @@ export async function POST(request: NextRequest) {
       .list(fileId);
 
     if (checkError || !fileExists || fileExists.length === 0) {
-      console.error('File not found in storage:', checkError);
+      console.error('File not found in storage:', {
+        error: checkError,
+        fileExists,
+        fileId,
+        storagePath,
+        filename,
+        filesize,
+      });
+
+      logError({
+        error: new Error(`File not found in storage: ${checkError?.message || 'File does not exist'}`),
+        severity: 'error',
+        route: '/api/files/finalize-upload',
+        method: 'POST',
+        userId,
+        request,
+        context: {
+          fileId,
+          storagePath,
+          filename,
+          fileSize: filesize,
+          checkError: checkError?.message,
+          filesInFolder: fileExists?.length || 0,
+        },
+      }).catch(err => console.error('Logging failed:', err));
+
       return NextResponse.json(
-        { error: 'File upload was not completed. Please try again.' },
+        { error: 'File upload was not completed. The file may not have finished uploading to storage. Please try again.' },
         { status: 400 }
       );
     }

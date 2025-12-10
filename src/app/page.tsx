@@ -118,6 +118,14 @@ export default function Home() {
 
   const uploadSingleFile = async (file: File, index: number): Promise<string | null> => {
     try {
+      // Log upload attempt for debugging
+      console.log('Starting upload:', {
+        filename: file.name,
+        size: file.size,
+        sizeMB: (file.size / (1024 * 1024)).toFixed(2) + 'MB',
+        type: file.type,
+      });
+
       // Update status to uploading
       setFileStatuses(prev => prev.map((status, i) =>
         i === index ? { ...status, status: 'uploading' as const, progress: 5 } : status
@@ -135,6 +143,12 @@ export default function Home() {
 
       if (!urlResponse.ok) {
         const errorData = await urlResponse.json();
+        console.error('Failed to get upload URL:', {
+          status: urlResponse.status,
+          error: errorData.error,
+          file: file.name,
+          size: file.size,
+        });
         throw new Error(errorData.error || 'Failed to get upload URL');
       }
 
@@ -164,13 +178,34 @@ export default function Home() {
             ));
             resolve();
           } else {
-            reject(new Error('Failed to upload file to storage'));
+            console.error('Storage upload failed:', {
+              status: xhr.status,
+              statusText: xhr.statusText,
+              response: xhr.responseText,
+              file: file.name,
+              size: file.size,
+            });
+            reject(new Error(`Upload failed (${xhr.status}): ${xhr.statusText || 'Storage error'}`));
           }
         });
 
         xhr.addEventListener('error', () => {
+          console.error('Network error during storage upload:', {
+            file: file.name,
+            size: file.size,
+          });
           reject(new Error('Network error during upload'));
         });
+
+        xhr.addEventListener('timeout', () => {
+          console.error('Upload timeout:', {
+            file: file.name,
+            size: file.size,
+          });
+          reject(new Error('Upload timeout - file too large or connection too slow'));
+        });
+
+        xhr.timeout = 300000; // 5 minute timeout for large files
 
         xhr.open('PUT', signedUrl);
         xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
@@ -200,6 +235,14 @@ export default function Home() {
       const data = await finalizeResponse.json();
 
       if (!finalizeResponse.ok) {
+        console.error('Finalize upload failed:', {
+          status: finalizeResponse.status,
+          error: data.error,
+          file: file.name,
+          size: file.size,
+          fileId,
+          storagePath,
+        });
         throw new Error(data.error || 'Failed to finalize upload');
       }
 

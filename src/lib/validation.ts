@@ -97,10 +97,10 @@ export function validateFilename(filename: string): { valid: boolean; error?: st
 }
 
 export function validateFileSize(size: number): { valid: boolean; error?: string } {
-  const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+  const maxSize = 50 * 1024 * 1024; // 50MB in bytes
 
   if (size > maxSize) {
-    return { valid: false, error: 'File size exceeds 100MB limit' };
+    return { valid: false, error: 'File size exceeds 50MB limit' };
   }
 
   return { valid: true };

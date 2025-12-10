@@ -193,7 +193,7 @@ bun run lint             # Check for errors
 ## Key Features
 
 ### File Management
-- Upload files up to 100MB
+- Upload files up to 50MB
 - Auto-deletion options (1 hour - 30 days, or never for logged-in users)
 - File previews: images, text, audio
 - Detailed file statistics

@@ -1,3 +1,189 @@
+# bunnybox todos - In Progress: File Size Limit Change 📏
+
+## 🔧 CURRENT WORK: Reducing File Size Limit to 50MB
+
+**Date:** December 10, 2025
+**Status:** ✅ COMPLETE
+**Change:** Maximum file size reduced from 100MB → 50MB
+
+### ✅ What Was Changed
+
+**1. Validation Logic** (`src/lib/validation.ts`)
+- ✅ Changed `maxSize` from 100MB to 50MB (52,428,800 bytes)
+- ✅ Updated error message: "File size exceeds 50MB limit"
+
+**2. API Error Messages** (`src/app/api/files/upload/route.ts`)
+- ✅ Updated parse error message to mention 50MB limit
+
+**3. FAQ Translations** (all 11 languages in `src/lib/translations.ts`)
+- ✅ English: Updated Q1 & Q2
+- ✅ Spanish: Updated Q1 & Q2
+- ✅ French: Updated Q1 & Q2
+- ✅ Japanese: Updated Q1 & Q2
+- ✅ Chinese: Updated Q1 & Q2
+- ✅ Italian: Updated Q1 & Q2
+- ✅ Vietnamese: Updated Q1 & Q2
+- ✅ German: Updated Q1 & Q2
+- ✅ Korean: Updated Q1 & Q2
+- ✅ Portuguese: Updated Q1 & Q2
+- ✅ Russian: Updated Q1 & Q2
+
+**4. Documentation Files**
+- ✅ `.same/README.md` - Updated features list
+- ✅ `.same/UPLOAD-TROUBLESHOOTING.md` - Updated limits and examples
+- ✅ `.same/QUICK-FIX-65MB-UPLOAD.md` - Updated to generic large file guide
+- ✅ `.same/STORAGE-LIMITS-CHECK.md` - Updated all size references
+
+### 📊 Impact
+
+**User-Facing Changes:**
+- Maximum upload size: 100MB → 50MB
+- FAQ now states 50MB limit in all 11 languages
+- Error messages reflect new 50MB limit
+
+**Rationale:**
+- Addresses upload reliability issues
+- Reduces server load and storage costs
+- Still supports most common file sizes
+- Users with files >50MB can compress them
+
+### 🚀 Ready to Deploy
+
+All changes complete and ready for production!
+
+---
+
+## 🔧 PREVIOUS WORK: Upload Failure Investigation (ARCHIVED)
+
+**Date:** December 10, 2025
+**Status:** 🔍 INVESTIGATING
+**Issue:** 65.01MB MP4 file failing to upload
+
+### ✅ User Theory Investigated: File Bloating
+
+**User's suspicion:** "Video files are stored in a way that bloats the file size, making 65MB exceed 100MB"
+
+**Investigation Result:**
+- ✅ Theory is CORRECT for old system (base64 encoding = 33% bloat)
+- ✅ Theory is WRONG for new system (direct binary upload = 0% bloat)
+- ✅ New system (Version 57+) uploads files AS-IS to Supabase Storage
+- ✅ No encoding, no transformation, no bloating!
+- ✅ 65MB stays 65MB
+
+**Actual likely issue:** Supabase bucket file size limit configured too low
+
+### 🎯 Changes Made
+
+**1. Enhanced Error Logging** (`src/app/page.tsx`)
+- ✅ Added detailed console logging at each upload step
+- ✅ Logs file details (name, size, type) at upload start
+- ✅ Logs XHR status codes and response text on failure
+- ✅ Added timeout detection and handling
+- ✅ Set 5-minute timeout for large file uploads (300,000ms)
+- ✅ Improved error messages for each failure scenario
+
+**2. Storage Diagnostics Endpoint** (`src/app/api/diagnostics/storage/route.ts`)
+- ✅ Created new endpoint: `/api/diagnostics/storage`
+- ✅ Checks Supabase connection
+- ✅ Verifies storage bucket exists
+- ✅ Tests signed URL creation
+- ✅ Tests file listing capability
+- ✅ Returns comprehensive health status
+
+**3. Enhanced Finalize Logging** (`src/app/api/files/finalize-upload/route.ts`)
+- ✅ Added detailed logging when file not found in storage
+- ✅ Logs file verification failures with context
+- ✅ Better error messages explaining the issue
+
+**4. Bucket Configuration Diagnostics** (`src/app/api/diagnostics/bucket-config/route.ts`)
+- ✅ Created new endpoint: `/api/diagnostics/bucket-config`
+- ✅ Checks bucket file size limit (this is likely the issue!)
+- ✅ Verifies bucket is public
+- ✅ Checks allowed MIME types
+- ✅ Tests signed URL creation
+- ✅ Provides specific warnings and recommendations
+
+**5. Documentation Created**
+- ✅ `.same/UPLOAD-TROUBLESHOOTING.md` - Comprehensive troubleshooting guide
+- ✅ `.same/QUICK-FIX-65MB-UPLOAD.md` - Quick reference for immediate actions
+- ✅ `.same/STORAGE-LIMITS-CHECK.md` - Storage limits and bucket configuration guide
+
+### 📋 Upload Flow (3-Step Process)
+
+1. **Get Upload URL** (`/api/files/get-upload-url`)
+   - Generates unique file ID
+   - Creates signed upload URL (10-minute expiration)
+   - Returns storage path and signed URL
+
+2. **Upload to Storage** (Direct browser → Supabase)
+   - Uses XMLHttpRequest for progress tracking
+   - Uploads directly to Supabase Storage
+   - 5-minute timeout for large files
+   - Real-time progress updates
+
+3. **Finalize Upload** (`/api/files/finalize-upload`)
+   - Verifies file exists in storage
+   - Creates database record
+   - Records upload for rate limiting
+   - Returns file URL
+
+### 🔍 Diagnostic Steps for User
+
+**Immediate Actions:**
+1. ✅ Open browser console (F12) during upload
+2. ✅ Check `/api/diagnostics/bucket-config` endpoint ⭐ NEW - MOST IMPORTANT
+3. ✅ Check `/api/diagnostics/storage` endpoint
+4. ✅ Verify Supabase Storage bucket configuration
+5. ✅ Check CORS settings in Supabase
+6. ✅ Verify storage quota not exceeded
+
+**Most Likely Issues (in order of probability):**
+1. 🎯 **Bucket file size limit set too low** (e.g., 50MB when file is 65MB)
+2. ❓ CORS not configured for bunnybox.moe
+3. ❓ Storage bucket not public
+4. ❓ Bucket doesn't exist or misconfigured
+5. ❓ Storage quota exceeded (Free tier: 1GB)
+- ❓ File size limit on bucket < 100MB
+
+### 🚀 Next Steps
+
+**Before Deploying:**
+- [ ] Run linter ✅ (done - only 1 warning, non-critical)
+- [ ] Test locally with diagnostics endpoint
+- [ ] Verify changes don't break existing uploads
+
+**To Deploy:**
+```bash
+cd bunnybox
+git add -A
+git commit -m "Add upload diagnostics and enhanced error handling for large file uploads
+
+- Added detailed console logging for each upload step
+- Created /api/diagnostics/storage endpoint
+- Added 5-minute timeout for large files
+- Enhanced error messages and logging
+- Created troubleshooting documentation"
+git push origin main
+```
+
+**After Deploying:**
+1. Visit https://bunnybox.moe/api/diagnostics/storage
+2. Attempt 65MB upload with console open
+3. Copy error message from console
+4. Check which step fails (1, 2, or 3)
+5. Apply appropriate fix from troubleshooting guide
+
+### 📊 Testing Checklist
+
+- [ ] Test diagnostics endpoint works
+- [ ] Test small file upload (1MB) still works
+- [ ] Test medium file upload (25MB) works
+- [ ] Test large file upload (65MB) with console open
+- [ ] Verify error messages are helpful
+- [ ] Check timeout handling works correctly
+
+---
+
 # bunnybox todos - Version 79: Admin Panel Media Previews 🖼️
 
 ## ✅ VERSION 79: ADMIN PANEL MEDIA PREVIEWS - COMPLETE!
