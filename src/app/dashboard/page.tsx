@@ -165,19 +165,19 @@ export default function DashboardPage() {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
                 {t.dashboard.myFiles}
               </h1>
-              <p className="text-base sm:text-lg text-black dark:text-white">Welcome back, {user.username}!</p>
+              <p className="text-base sm:text-lg text-black dark:text-white">{t.dashboard.welcomeBack}, {user.username}!</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {user.username === 'koishi' && (
                 <Link href="/admin/panel">
                   <Button className="w-full sm:w-auto bunny-button bg-orange-400 dark:bg-orange-900/50 hover:bg-orange-500 dark:hover:bg-orange-800/50 text-orange-900 dark:text-orange-200 min-h-[44px]">
-                    Admin Panel
+                    {t.dashboard.adminPanel}
                   </Button>
                 </Link>
               )}
               <Link href="/">
                 <Button className="w-full sm:w-auto bunny-button bg-pink-300 dark:bg-pink-900/50 hover:bg-pink-400 dark:hover:bg-pink-800/50 text-pink-900 dark:text-pink-200 min-h-[44px]">
-                  Upload New File
+                  {t.dashboard.uploadNewFile}
                 </Button>
               </Link>
             </div>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               <div className="w-full sm:w-80 sm:ml-auto">
                 <Input
                   type="text"
-                  placeholder="Search by filename..."
+                  placeholder={t.dashboard.searchPlaceholder}
                   value={fileSearch}
                   onChange={(e) => {
                     setFileSearch(e.target.value);
@@ -217,13 +217,13 @@ export default function DashboardPage() {
                 <table className="w-full min-w-[640px]">
                   <thead className="bg-white/60 dark:bg-black/30 border-b-2 border-pink-200 dark:border-pink-900/30">
                     <tr>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Filename</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Size</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden md:table-cell">Uploaded</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">Visitors</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">Downloads</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Expires</th>
-                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">Actions</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">{t.dashboard.filename}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">{t.dashboard.size}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden md:table-cell">{t.dashboard.uploaded}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">{t.dashboard.visitors}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hidden lg:table-cell">{t.dashboard.downloads}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">{t.dashboard.expires}</th>
+                      <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">{t.dashboard.actions}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -268,7 +268,7 @@ export default function DashboardPage() {
                               <Button
                                 className="bunny-button bg-purple-300 dark:bg-purple-900/50 hover:bg-purple-400 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                               >
-                                View
+                                {t.dashboard.view}
                               </Button>
                             </Link>
                             <Button
@@ -276,14 +276,14 @@ export default function DashboardPage() {
                               variant="outline"
                               className="bunny-button border-pink-300 dark:border-pink-900/30 text-pink-700 dark:text-pink-400 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                             >
-                              Copy
+                              {t.dashboard.copy}
                             </Button>
                             <Button
                               onClick={() => handleDelete(file.id)}
                               variant="outline"
                               className="bunny-button border-red-300 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                             >
-                              Delete
+                              {t.dashboard.delete}
                             </Button>
                           </div>
                         </td>

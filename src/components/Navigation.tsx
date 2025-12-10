@@ -458,10 +458,10 @@ export function Navigation() {
                 className="bunny-input mt-1"
                 placeholder={
                   authMode === 'signup'
-                    ? '3-16 characters, letters/numbers/_/-'
+                    ? t.auth.usernamePlaceholderSignup
                     : authMode === 'recover'
-                    ? 'Enter your username or email'
-                    : 'Username or email'
+                    ? t.auth.usernamePlaceholderRecover
+                    : t.auth.usernamePlaceholderSignin
                 }
               />
             </div>
@@ -469,9 +469,9 @@ export function Navigation() {
             {authMode === 'recover' ? (
               resetSent ? (
                 <div className="bg-green-100 dark:bg-green-950/30 border-2 border-green-300 dark:border-green-900/30 rounded-2xl p-4">
-                  <p className="text-green-800 dark:text-green-400 font-semibold">Email Sent!</p>
+                  <p className="text-green-800 dark:text-green-400 font-semibold">{t.auth.resetEmailSent}</p>
                   <p className="text-sm text-green-700 dark:text-green-300 mt-2">
-                    Check your email for a password reset link. The link will expire in 1 hour.
+                    {t.auth.resetEmailDescription}
                   </p>
                 </div>
               ) : null
@@ -500,7 +500,7 @@ export function Navigation() {
                       </svg>
                       {showDevKeyTooltip && (
                         <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 text-xs text-white bg-gray-800 rounded-lg whitespace-nowrap z-50">
-                          Contact @.koishi on Discord for help!
+                          {t.auth.devKeyTooltip}
                         </span>
                       )}
                     </div>
@@ -511,12 +511,12 @@ export function Navigation() {
                     value={devKey}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDevKey(e.target.value)}
                     className="bunny-input mt-1"
-                    placeholder="Enter dev key"
+                    placeholder={t.auth.devKeyPlaceholder}
                   />
                 </div>
                 {recoveredPassword && (
                   <div className="bg-green-100 dark:bg-green-950/30 border-2 border-green-300 dark:border-green-900/30 rounded-2xl p-4">
-                    <p className="text-green-800 dark:text-green-400 font-semibold">Your password is:</p>
+                    <p className="text-green-800 dark:text-green-400 font-semibold">{t.auth.yourPasswordIs}</p>
                     <p className="text-lg font-mono text-green-900 dark:text-green-200 mt-1">{recoveredPassword}</p>
                   </div>
                 )}
@@ -534,7 +534,7 @@ export function Navigation() {
                       value={email}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                       className="bunny-input mt-1"
-                      placeholder="your@email.com"
+                      placeholder={t.auth.emailPlaceholder}
                       required
                     />
                   </div>
@@ -549,7 +549,7 @@ export function Navigation() {
                     value={password}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     className="bunny-input mt-1"
-                    placeholder={authMode === 'signup' ? '8-24 characters' : 'Your password'}
+                    placeholder={authMode === 'signup' ? t.auth.passwordPlaceholderSignup : t.auth.passwordPlaceholderSignin}
                   />
                 </div>
                 {authMode === 'signup' && (
@@ -563,7 +563,7 @@ export function Navigation() {
                       value={confirmPassword}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                       className="bunny-input mt-1"
-                      placeholder="Confirm your password"
+                      placeholder={t.auth.confirmPasswordPlaceholder}
                     />
                   </div>
                 )}
