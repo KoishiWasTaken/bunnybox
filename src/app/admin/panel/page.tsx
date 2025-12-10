@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 import { formatFileSize } from '@/lib/validation';
 import Link from 'next/link';
+import { FilePreview } from '@/components/FilePreview';
 
 interface User {
   id: string;
@@ -34,10 +36,14 @@ interface FileUpload {
   upload_date: string;
   delete_at: string | null;
   mime_type: string;
+  storage_path: string | null;
+  uses_storage: boolean;
+  file_data: string | null;
 }
 
 export default function AdminPanel() {
   const { user, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [files, setFiles] = useState<FileUpload[]>([]);
@@ -425,7 +431,7 @@ export default function AdminPanel() {
                 <div className="w-64">
                   <Input
                     type="text"
-                    placeholder="Search by filename or uploader..."
+                    placeholder={t.admin.searchFilesPlaceholder}
                     value={fileSearch}
                     onChange={(e) => setFileSearch(e.target.value)}
                     className="bunny-input"
@@ -437,6 +443,7 @@ export default function AdminPanel() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-pink-200 dark:border-pink-900/30">
+                      <th className="text-left p-3 font-bold text-gray-800 dark:text-gray-200">Preview</th>
                       <th className="text-left p-3 font-bold text-gray-800 dark:text-gray-200">Filename</th>
                       <th className="text-left p-3 font-bold text-gray-800 dark:text-gray-200">Size</th>
                       <th className="text-left p-3 font-bold text-gray-800 dark:text-gray-200">Uploader</th>
@@ -447,6 +454,16 @@ export default function AdminPanel() {
                   <tbody>
                     {paginatedFiles.map((file) => (
                       <tr key={file.id} className="border-b border-pink-100 dark:border-pink-900/20">
+                        <td className="p-3">
+                          <FilePreview
+                            fileId={file.id}
+                            filename={file.filename}
+                            mimeType={file.mime_type}
+                            storagePath={file.storage_path}
+                            usesStorage={file.uses_storage}
+                            fileData={file.file_data}
+                          />
+                        </td>
                         <td className="p-3 text-black dark:text-white font-mono text-sm max-w-xs truncate">
                           {file.filename}
                         </td>
