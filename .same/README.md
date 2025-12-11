@@ -1,12 +1,24 @@
 # Bunnybox Development Notes
 
-## 🚨 IMPORTANT: Git Repository Issue
-**If git commands fail with "not a git repository" error**, see `GIT-TROUBLESHOOTING.md` for the quick fix.
+## 🚨 CRITICAL: GIT WORKFLOW - READ FIRST! 🚨
 
-**Quick solution:**
+**BEFORE ANY GIT COMMIT OR PUSH, CHECK THESE FILES:**
+
+1. 📖 **[GIT-WORKFLOW.md](GIT-WORKFLOW.md)** - Complete step-by-step commit workflow
+2. 🔧 **[GIT-TROUBLESHOOTING.md](GIT-TROUBLESHOOTING.md)** - Solutions for common git issues
+
+### Quick Git Reference
+
+**If git commands fail with "not a git repository" error:**
 ```bash
 cd /home/project/bunnybox && rm -rf .git && git clone https://github.com/KoishiWasTaken/bunnybox.git temp_repo && cp -r temp_repo/.git ./ && rm -rf temp_repo
 ```
+
+**Before committing:**
+1. Check production version: `git log --oneline -1`
+2. Check Same version: `cat .same/todos.md | head -30`
+3. Commit each version individually in chronological order
+4. See **GIT-WORKFLOW.md** for complete instructions
 
 ## ⚠️ CRITICAL: Systematic Git Commits to Prevent Data Loss
 
