@@ -31,12 +31,35 @@ export async function GET(
       .eq('id', id);
   }
 
-  // For files in Supabase Storage, redirect to the public URL
+  // For files in Supabase Storage
   if (file.uses_storage && file.storage_path) {
     const storageUrl = getStoragePublicUrl(file.storage_path);
-    console.log(`Redirecting to storage URL: ${storageUrl}`);
 
-    // Redirect to the storage URL
+    // For embed requests (e.g. Discord bot via middleware rewrite), fetch
+    // and stream the file directly instead of redirecting. Discord needs
+    // raw bytes from the original URL to properly render media — a redirect
+    // causes GIFs to lose animation and may add an embed frame.
+    if (isEmbed) {
+      try {
+        const storageResponse = await fetch(storageUrl);
+        if (storageResponse.ok && storageResponse.body) {
+          return new NextResponse(storageResponse.body, {
+            headers: {
+              'Content-Type': file.mime_type || 'application/octet-stream',
+              'Content-Disposition': `inline; filename="${file.filename}"`,
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET',
+              'Cache-Control': 'public, max-age=31536000, immutable',
+            },
+          });
+        }
+      } catch (e) {
+        console.error('Failed to stream file for embed:', e);
+      }
+      // Fall through to redirect if streaming fails
+    }
+
+    console.log(`Redirecting to storage URL: ${storageUrl}`);
     return NextResponse.redirect(storageUrl, 302);
   }
 
