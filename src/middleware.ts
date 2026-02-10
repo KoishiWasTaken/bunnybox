@@ -45,12 +45,15 @@ export async function middleware(request: NextRequest) {
     }
 
     const mimeType: string = data[0].mime_type || '';
-    const isEmbeddableMedia = mimeType.startsWith('image/') || mimeType.startsWith('video/');
+    const isGif = mimeType === 'image/gif';
+    const isImage = mimeType.startsWith('image/');
+    const isVideo = mimeType.startsWith('video/');
 
-    // Only redirect for images and videos (including GIFs).
-    // Audio and other file types keep the OG embed card since Discord
-    // can't render them inline anyway.
-    if (!isEmbeddableMedia) {
+    // GIFs need the og:video approach (handled in layout.tsx) to animate
+    // on Discord. Redirecting to the raw file only shows the first frame.
+    // Non-GIF images and videos can be redirected to the raw file for
+    // frameless embedding.
+    if (isGif || (!isImage && !isVideo)) {
       return NextResponse.next();
     }
 
