@@ -13,9 +13,6 @@
     "restore": "bun run scripts/restore-deleted-files.ts"
   },
   "dependencies": {
-    "@ffmpeg/core": "^0.12.10",
-    "@ffmpeg/ffmpeg": "^0.12.15",
-    "@ffmpeg/util": "^0.12.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@supabase/supabase-js": "^2.84.0",

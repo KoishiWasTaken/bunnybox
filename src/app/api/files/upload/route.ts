@@ -425,11 +425,14 @@ export async function POST(request: NextRequest) {
       // Record upload for rate limiting
       await recordUpload(ip);
 
+      const ext = sanitizedFilename.split('.').pop()?.toLowerCase() || '';
+      const sharePath = ext ? `/f/${fileId}.${ext}` : `/f/${fileId}`;
+
       console.log(`=== Upload Successful: ${fileId} ===`);
       return NextResponse.json({
         success: true,
         fileId: fileId,
-        url: `/f/${fileId}`,
+        url: sharePath,
       });
     } catch (postInsertError) {
       // If anything fails after insert, delete the file to avoid orphaned records
