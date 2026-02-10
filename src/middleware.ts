@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const userAgent = request.headers.get('user-agent') || '';
+  const pathname = request.nextUrl.pathname;
 
-  // Only intercept Discord's bot crawler
+  // Handle extension-based URLs: /f/{id}.{ext} (e.g., /f/abc123.gif)
+  // These serve the raw file directly. Discord's client recognizes the
+  // file extension and embeds media natively — animating GIFs, showing
+  // images frameless, playing videos inline.
+  const extMatch = pathname.match(/^\/f\/([^/.]+)\.\w+$/);
+  if (extMatch) {
+    const fileId = extMatch[1];
+    const downloadUrl = new URL(`/api/files/${fileId}/download`, request.url);
+    downloadUrl.searchParams.set('embed', '1');
+    return NextResponse.rewrite(downloadUrl);
+  }
+
+  // For /f/{id} URLs (no extension), only intercept Discord's bot
+  const userAgent = request.headers.get('user-agent') || '';
   if (!userAgent.includes('Discordbot')) {
     return NextResponse.next();
   }
 
   // Extract file ID from path
-  const match = request.nextUrl.pathname.match(/^\/f\/([^/]+)$/);
+  const match = pathname.match(/^\/f\/([^/]+)$/);
   if (!match) {
     return NextResponse.next();
   }
 
   const fileId = match[1];
 
-  // Query Supabase REST API directly to check if the file is embeddable media
+  // Query Supabase REST API to check if the file is embeddable media
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -45,7 +58,6 @@ export async function middleware(request: NextRequest) {
     }
 
     const mimeType: string = data[0].mime_type || '';
-    const isGif = mimeType === 'image/gif';
     const isImage = mimeType.startsWith('image/');
     const isVideo = mimeType.startsWith('video/');
 
@@ -53,26 +65,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // GIFs are handled via og:video tags in the layout (pointing to an
-    // MP4 version), so let the page HTML through for Discord to parse.
-    if (isGif) {
-      return NextResponse.next();
-    }
-
-    // Rewrite (NOT redirect) to the download endpoint so Discord receives
-    // raw file bytes directly from the /f/{id} URL itself. A redirect would
-    // cause Discord to only show the first frame of GIFs. With a rewrite,
-    // the download endpoint streams the file and Discord sees it as a direct
-    // media response — rendering images, videos, and GIFs frameless.
+    // Rewrite to the download endpoint so Discord receives raw file bytes
     const downloadUrl = new URL(`/api/files/${fileId}/download`, request.url);
     downloadUrl.searchParams.set('embed', '1');
     return NextResponse.rewrite(downloadUrl);
   } catch {
-    // On any failure, fall through to normal page rendering
     return NextResponse.next();
   }
 }
 
 export const config = {
-  matcher: '/f/:id',
+  matcher: '/f/:id*',
 };

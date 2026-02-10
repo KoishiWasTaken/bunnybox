@@ -166,11 +166,17 @@ export async function POST(request: NextRequest) {
     // Record upload for rate limiting
     await recordUpload(ip);
 
+    // Include file extension in the share URL so Discord can identify
+    // the media type from the URL itself (e.g., /f/abc123.gif).
+    // The middleware serves raw file bytes for extension-based URLs.
+    const ext = sanitizeFilename(filename).split('.').pop()?.toLowerCase() || '';
+    const sharePath = ext ? `/f/${fileId}.${ext}` : `/f/${fileId}`;
+
     console.log(`✅ Upload finalized: ${fileId}`);
     return NextResponse.json({
       success: true,
       fileId: fileId,
-      url: `/f/${fileId}`,
+      url: sharePath,
     });
   } catch (error) {
     console.error('Finalize upload error:', error);

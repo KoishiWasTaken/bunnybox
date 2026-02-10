@@ -92,8 +92,10 @@ export default function DashboardPage() {
     }
   };
 
-  const copyLink = (fileId: string) => {
-    const url = `${window.location.origin}/f/${fileId}`;
+  const copyLink = (fileId: string, filename: string) => {
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    const path = ext ? `/f/${fileId}.${ext}` : `/f/${fileId}`;
+    const url = `${window.location.origin}${path}`;
     navigator.clipboard.writeText(url);
     toast.success(t.home.linkCopied);
   };
@@ -272,7 +274,7 @@ export default function DashboardPage() {
                               </Button>
                             </Link>
                             <Button
-                              onClick={() => copyLink(file.id)}
+                              onClick={() => copyLink(file.id, file.filename)}
                               variant="outline"
                               className="bunny-button border-pink-300 dark:border-pink-900/30 text-pink-700 dark:text-pink-400 px-2 sm:px-3 py-1 text-xs sm:text-sm h-auto min-h-[36px]"
                             >

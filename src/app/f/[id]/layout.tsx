@@ -24,7 +24,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const isGif = file.mime_type === 'image/gif';
     const isImage = file.mime_type?.startsWith('image/');
     const isVideo = file.mime_type?.startsWith('video/');
     const isAudio = file.mime_type?.startsWith('audio/');
@@ -65,34 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 
     // Add media-specific Open Graph tags
-    if (isGif) {
-      // GIFs need to be served as MP4 video for Discord to animate them.
-      // The /api/files/{id}/embed endpoint converts and caches the MP4.
-      const embedUrl = `${baseUrl}/api/files/${id}/embed`;
-      metadata.openGraph = {
-        ...metadata.openGraph,
-        type: 'video.other',
-        images: [
-          {
-            url: downloadUrl,
-            alt: file.filename,
-          },
-        ],
-        videos: [
-          {
-            url: embedUrl,
-            type: 'video/mp4',
-          },
-        ],
-      };
-      if (metadata.twitter) {
-        metadata.twitter = {
-          ...metadata.twitter,
-          card: 'summary_large_image',
-          images: [downloadUrl],
-        };
-      }
-    } else if (isImage) {
+    if (isImage) {
       metadata.openGraph = {
         ...metadata.openGraph,
         images: [
