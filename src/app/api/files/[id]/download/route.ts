@@ -22,11 +22,14 @@ export async function GET(
     );
   }
 
-  // Increment download count
-  await supabase
-    .from('files')
-    .update({ download_count: (file.download_count || 0) + 1 })
-    .eq('id', id);
+  // Skip download count increment for bot embed requests (e.g. Discord crawler)
+  const isEmbed = request.nextUrl.searchParams.get('embed') === '1';
+  if (!isEmbed) {
+    await supabase
+      .from('files')
+      .update({ download_count: (file.download_count || 0) + 1 })
+      .eq('id', id);
+  }
 
   // For files in Supabase Storage, redirect to the public URL
   if (file.uses_storage && file.storage_path) {
