@@ -45,10 +45,17 @@ export async function middleware(request: NextRequest) {
     }
 
     const mimeType: string = data[0].mime_type || '';
+    const isGif = mimeType === 'image/gif';
     const isImage = mimeType.startsWith('image/');
     const isVideo = mimeType.startsWith('video/');
 
     if (!isImage && !isVideo) {
+      return NextResponse.next();
+    }
+
+    // GIFs are handled via og:video tags in the layout (pointing to an
+    // MP4 version), so let the page HTML through for Discord to parse.
+    if (isGif) {
       return NextResponse.next();
     }
 
