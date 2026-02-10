@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/files?id=eq.${encodeURIComponent(fileId)}&select=mime_type,storage_path,uses_storage`,
+      `${supabaseUrl}/rest/v1/files?id=eq.${encodeURIComponent(fileId)}&select=mime_type`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -44,8 +44,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const file = data[0];
-    const mimeType: string = file.mime_type || '';
+    const mimeType: string = data[0].mime_type || '';
     const isImage = mimeType.startsWith('image/');
     const isVideo = mimeType.startsWith('video/');
 
@@ -53,20 +52,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // For files in Supabase Storage, redirect directly to the public URL.
-    // This is a single redirect to a URL that preserves the original filename
-    // (e.g. ends in .gif, .png, .mp4), which Discord needs to properly
-    // identify and render the media — especially animated GIFs.
-    if (file.uses_storage && file.storage_path) {
-      const storagePublicUrl = `${supabaseUrl}/storage/v1/object/public/files/${file.storage_path}`;
-      return NextResponse.redirect(storagePublicUrl, 302);
-    }
-
-    // For legacy base64 files, redirect to the download endpoint which
-    // serves the raw bytes directly (no further redirect).
+    // Rewrite (NOT redirect) to the download endpoint so Discord receives
+    // raw file bytes directly from the /f/{id} URL itself. A redirect would
+    // cause Discord to only show the first frame of GIFs. With a rewrite,
+    // the download endpoint streams the file and Discord sees it as a direct
+    // media response — rendering images, videos, and GIFs frameless.
     const downloadUrl = new URL(`/api/files/${fileId}/download`, request.url);
     downloadUrl.searchParams.set('embed', '1');
-    return NextResponse.redirect(downloadUrl, 302);
+    return NextResponse.rewrite(downloadUrl);
   } catch {
     // On any failure, fall through to normal page rendering
     return NextResponse.next();
