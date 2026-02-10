@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/files?id=eq.${encodeURIComponent(fileId)}&select=mime_type`,
+      `${supabaseUrl}/rest/v1/files?id=eq.${encodeURIComponent(fileId)}&select=mime_type,storage_path,uses_storage`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -44,22 +44,26 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const mimeType: string = data[0].mime_type || '';
-    const isGif = mimeType === 'image/gif';
+    const file = data[0];
+    const mimeType: string = file.mime_type || '';
     const isImage = mimeType.startsWith('image/');
     const isVideo = mimeType.startsWith('video/');
 
-    // GIFs need the og:video approach (handled in layout.tsx) to animate
-    // on Discord. Redirecting to the raw file only shows the first frame.
-    // Non-GIF images and videos can be redirected to the raw file for
-    // frameless embedding.
-    if (isGif || (!isImage && !isVideo)) {
+    if (!isImage && !isVideo) {
       return NextResponse.next();
     }
 
-    // Redirect Discord's bot to the raw file download.
-    // Discord follows the redirect, sees raw media bytes with the correct
-    // Content-Type, and embeds it frameless — just like a direct image/video URL.
+    // For files in Supabase Storage, redirect directly to the public URL.
+    // This is a single redirect to a URL that preserves the original filename
+    // (e.g. ends in .gif, .png, .mp4), which Discord needs to properly
+    // identify and render the media — especially animated GIFs.
+    if (file.uses_storage && file.storage_path) {
+      const storagePublicUrl = `${supabaseUrl}/storage/v1/object/public/files/${file.storage_path}`;
+      return NextResponse.redirect(storagePublicUrl, 302);
+    }
+
+    // For legacy base64 files, redirect to the download endpoint which
+    // serves the raw bytes directly (no further redirect).
     const downloadUrl = new URL(`/api/files/${fileId}/download`, request.url);
     downloadUrl.searchParams.set('embed', '1');
     return NextResponse.redirect(downloadUrl, 302);
