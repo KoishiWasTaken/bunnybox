@@ -315,6 +315,22 @@ export default function Home() {
       <UploadProgressBar progress={uploadProgress} />
       <Navigation />
 
+      {/* Database Outage Banner */}
+      <div className="w-full bg-amber-50 dark:bg-amber-950/40 border-b-2 border-amber-400 dark:border-amber-700 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-start gap-3">
+          <span className="text-amber-600 dark:text-amber-400 text-xl mt-0.5 flex-shrink-0">⚠️</span>
+          <div>
+            <p className="font-bold text-amber-900 dark:text-amber-200 text-sm sm:text-base">
+              Database outage — services temporarily unavailable
+            </p>
+            <p className="text-amber-800 dark:text-amber-300 text-xs sm:text-sm mt-0.5">
+              File hosting and user accounts are currently unavailable while we resolve a database issue.
+              We expect to be back up by <strong>March 11, 2026</strong>. Thank you for your patience.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Show activation popup for unverified users with email */}
       {user && user.email && !user.is_verified && (
         <ActivationPopup
